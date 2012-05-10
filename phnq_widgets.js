@@ -5,6 +5,7 @@ require("phnq_log").exec("phnq_widgets", function(log)
 	var _fs = require("fs");
 	var _path = require("path");
 	var phnq_core = require("phnq_core");
+	var config = require("./config");
 
 	var phnq_widgets = module.exports =
 	{
@@ -13,28 +14,35 @@ require("phnq_log").exec("phnq_widgets", function(log)
 			widgetManager.addScanPath(path);
 		},
 
-		listen: function(port, prefix)
+		listen: function(port)
 		{
 			port = port || 8888;
-			this.prefix = this.prefix || "/widgets";
 			app.listen(port);
-			setRoutes(this.prefix);
-		}
+			setRoutes();
+		},
+
+		config: config
 	};
 
-	var setRoutes = function(prefix)
+	var setRoutes = function()
 	{
-		app.get(prefix+"/boot", function(req, res)
+		app.get(config.uriPrefix+"/boot", function(req, res)
 		{
 			res.contentType("js");
 			res.send(getClientBoot());
 		});
 
-		app.get(prefix+"/:widgetType", function(req, res)
+		app.get(config.uriPrefix+"/:widgetType", function(req, res)
 		{
 			if(!req.widget)
 				return res.send(404);
 
+			/*
+			*	The context object is what is passed into the compiled markup
+			*	template function.  This must be duplicated on the client too
+			*	with alternative implementations.
+			*/
+			var nextIdIdx = 0;
 			var context =
 			{
 				params: req.query,
@@ -42,15 +50,19 @@ require("phnq_log").exec("phnq_widgets", function(log)
 				{
 					var widget = widgetManager.getWidget(type);
 					var markupFn = eval(widget.getCompiledMarkup());
-					var markup = markupFn();
+					var markup = markupFn(this);
 					return markup;
+				},
+				nextId: function()
+				{
+					return config.idPrefix + (nextIdIdx++);
 				}
 			};
 
 			res.send(req.widget.getWidgetShellCode(context));
 		});
 
-		app.get(prefix+"/:widgetType/static/:staticPath", function(req, res)
+		app.get(config.uriPrefix+"/:widgetType/static/:staticPath", function(req, res)
 		{
 			if(!req.widget)
 				return res.send(404);

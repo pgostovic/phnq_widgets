@@ -4,6 +4,7 @@ require("phnq_log").exec("widget", function(log)
 	var phnq_ejs = require("phnq_ejs");
 	var _path = require("path");
 	var _fs = require("fs");
+	var config = require("./config");
 
 	module.exports = phnq_core.clazz(
 	{
@@ -51,6 +52,12 @@ require("phnq_log").exec("widget", function(log)
 						var classes = (node.attributes["class"] || "").trim().split(/\s*/);
 						classes.push(_this.type);
 						node.attributes["class"] = classes.join(" ");
+
+						var idAttr = node.attributes["id"];
+						if(!idAttr)
+						{
+							node.attributes["id"] = "<%=nextId()%>";
+						}
 					}
 
 					buf.push("<"+node.name);
@@ -104,7 +111,7 @@ require("phnq_log").exec("widget", function(log)
 			switch(tagUri + ":" + tagName+":"+attrName)
 			{
 				case ":img:src":
-					return require("phnq_widgets").prefix + "/" + this.type + "/" + attrValue;
+					return config.uriPrefix + "/" + this.type + "/" + attrValue;
 					break;
 			}
 			return attrValue;
@@ -121,7 +128,7 @@ require("phnq_log").exec("widget", function(log)
 			var shellCode = shellFn(
 			{
 				title: title,
-				prefix: require("phnq_widgets").prefix,
+				prefix: config.uriPrefix,
 				body: markup
 			});
 
