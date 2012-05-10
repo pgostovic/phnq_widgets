@@ -12,6 +12,7 @@
    	"phnq_log": "1.0.0",
    	"phnq_core": "1.0.0",
    	"phnq_ejs": "1.0.0",
-    "express": "2.5.9"
+    "express": "2.5.9",
+    "sax": "0.4.0"
    }
 }
