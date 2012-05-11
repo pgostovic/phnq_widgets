@@ -1,5 +1,6 @@
 module.exports =
 {
 	uriPrefix: "/widgets",
-	idPrefix: "widget_"
+	idPrefix: "w_",
+	idPrefixClient: "cw_"
 };

@@ -1,5 +1,6 @@
 require("phnq_log").exec("phnq_widgets", function(log)
 {
+	var _ = require("underscore");
 	var app = require("express").createServer();
 	var widgetManager = require("./widget_manager").instance();
 	var _fs = require("fs");
@@ -32,6 +33,68 @@ require("phnq_log").exec("phnq_widgets", function(log)
 			res.send(getClientBoot());
 		});
 
+		app.get(config.uriPrefix+"/load", function(req, res)
+		{
+			var result =
+			{
+				templates: {},
+				scripts: [],
+				styles: []
+			};
+
+			var classesOnly = req.query.co.split(",");
+			var fullyLoaded = req.query.fl.split(",");
+			var toLoad = req.query.t.split(",");
+
+			// Fill in toLoad with dependencies.
+			for(var i=0; i<toLoad.length; i++)
+			{
+				var type = toLoad[i];
+				var widget = widgetManager.getWidget(type);
+				if(widget)
+				{
+					var deps = widget.getDependencies();
+					for(var j=0; j<deps.length; j++)
+					{
+						if(_.indexOf(fullyLoaded, deps[j]) == -1)
+							toLoad.push(deps[j]);
+					}
+				}
+			}
+			toLoad = _.uniq(toLoad);
+
+			for(var i=0; i<toLoad.length; i++)
+			{
+				var type = toLoad[i];
+				var widget = widgetManager.getWidget(type);
+				if(widget)
+				{
+					result.templates[type] = widget.getCompiledMarkup();
+
+					if(_.indexOf(classesOnly, type) == -1)
+					{
+
+						var script = widget.getScript();
+						if(script)
+							result.scripts.push(script);
+
+						var style = widget.getStyle();
+						if(style)
+							result.styles.push(style);
+					}
+				}
+			}
+
+			var buf = [];
+			buf.push(req.query.jsoncallback);
+			buf.push("(");
+			buf.push(JSON.stringify(result));
+			buf.push(");");
+
+			res.contentType("js");
+			res.send(buf.join(""));
+		});
+
 		app.get(config.uriPrefix+"/:widgetType", function(req, res)
 		{
 			if(!req.widget)
@@ -40,18 +103,32 @@ require("phnq_log").exec("phnq_widgets", function(log)
 			/*
 			*	The context object is what is passed into the compiled markup
 			*	template function.  This must be duplicated on the client too
-			*	with alternative implementations.
+			*	with alternative, client-specific implementations.
 			*/
 			var nextIdIdx = 0;
 			var context =
 			{
 				params: req.query,
-				widget: function(type)
+				widget: function(type, options)
 				{
-					var widget = widgetManager.getWidget(type);
-					var markupFn = eval(widget.getCompiledMarkup());
-					var markup = markupFn(this);
-					return markup;
+					options = options || {};
+					options.lazy = !!options.lazy;
+
+					if(options.lazy)
+					{
+						var wphBuf = [];
+						wphBuf.push("<ul class=\"wph "+type+"\">");
+						// params as <li>'s
+						wphBuf.push("</ul>");
+						return wphBuf.join("");
+					}
+					else
+					{
+						var widget = widgetManager.getWidget(type);
+						var markupFn = eval(widget.getCompiledMarkup());
+						var markup = markupFn(this);
+						return markup;
+					}
 				},
 				nextId: function()
 				{
@@ -112,6 +189,10 @@ require("phnq_log").exec("phnq_widgets", function(log)
 			if(filename)
 				buf.push(_fs.readFileSync(filename, "UTF-8"));
 		}
+
+		buf.push("phnq_widgets.config = ");
+		buf.push(JSON.stringify(phnq_widgets.config));
+		buf.push(";");
 
 		return clientBoot = buf.join("");
 

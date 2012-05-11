@@ -3,7 +3,7 @@ phnq_log.exec("<%=type%>", function(log)
 	<%=script%>
 
 	if(typeof(widget) == "object")
-	{
 		phnq_widgets.create("<%=type%>", widget);
-	}
+	else
+		phnq_widgets.create("<%=type%>");
 });

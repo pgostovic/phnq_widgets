@@ -130,17 +130,23 @@ require("phnq_log").exec("widget", function(log)
 				markupFn(
 				{
 					params: {},
-					widget: function(type)
+					widget: function(type, options)
 					{
-						var depWidget = require("./widget_manager").instance().getWidget(type);
-						if(depWidget)
+						options = options || {};
+						options.lazy = !!options.lazy;
+
+						if(!options.lazy)
 						{
-							var nestedDeps = depWidget.getDependencies();
-							for(var i=0; i<nestedDeps.length; i++)
+							var depWidget = require("./widget_manager").instance().getWidget(type);
+							if(depWidget)
 							{
-								deps.push(nestedDeps[i]);
+								var nestedDeps = depWidget.getDependencies();
+								for(var i=0; i<nestedDeps.length; i++)
+								{
+									deps.push(nestedDeps[i]);
+								}
+								deps.push(type);
 							}
-							deps.push(type);
 						}
 					},
 					nextId: function()
@@ -156,12 +162,11 @@ require("phnq_log").exec("widget", function(log)
 					"}catch(ex){}}})"
 				);
 				rawScriptWrapperFn({
-					requireWidget: function(type)
+					depend: function(type)
 					{
 						deps.push(type);
 					}
 				});
-
 
 				this.dependencies = _.uniq(deps);
 			}
@@ -202,11 +207,27 @@ require("phnq_log").exec("widget", function(log)
 			// Aggregate the scripts and styles
 			var scriptBuf = [];
 			var styleBuf = [];
+			var extScriptBuf = [];
 			for(var i=0; i<typesLen; i++)
 			{
-				var depWidget = require("./widget_manager").instance().getWidget(types[i]);
-				scriptBuf.push(depWidget.getScript());
-				styleBuf.push(depWidget.getStyle());
+				var type = types[i];
+				if(type.match(/^https?:/))
+				{
+					extScriptBuf.push("<script type='text/javascript' src='"+type+"'></script>");
+				}
+				else
+				{
+					try
+					{
+						var depWidget = require("./widget_manager").instance().getWidget(type);
+						scriptBuf.push(depWidget.getScript());
+						styleBuf.push(depWidget.getStyle());
+					}
+					catch(ex)
+					{
+						log.error("Error loading dependency: ", type);
+					}
+				}
 			}
 
 			var shellFn = getCompiledShellMarkupTemplate();
@@ -215,6 +236,7 @@ require("phnq_log").exec("widget", function(log)
 				title: title,
 				prefix: config.uriPrefix,
 				body: markup,
+				extScript: extScriptBuf.join(""),
 				script: scriptBuf.join(""),
 				style: styleBuf.join("")
 			});
