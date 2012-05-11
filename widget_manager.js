@@ -5,11 +5,13 @@ require("phnq_log").exec("widget_manager", function(log)
 	var _path = require("path");
 	var Widget = require("./widget");
 
+	var instance = null;
+
 	module.exports =
 	{
-		create: function()
+		instance: function()
 		{
-			return new WidgetManager();
+			return instance || (instance = new WidgetManager());
 		}
 	};
 
@@ -70,6 +72,7 @@ require("phnq_log").exec("widget_manager", function(log)
 			this.widgets = {};
 
 			var paths = this.scanPaths.slice(0).reverse();
+			paths.push(_path.join(__dirname, "widgets"));
 
 			var scanNextPath = function()
 			{

@@ -5,6 +5,7 @@ require("phnq_log").exec("widget", function(log)
 	var _path = require("path");
 	var _fs = require("fs");
 	var config = require("./config");
+	var _ = require("underscore");
 
 	module.exports = phnq_core.clazz(
 	{
@@ -17,18 +18,32 @@ require("phnq_log").exec("widget", function(log)
 
 		getScript: function()
 		{
-			if(!this.script)
+			if(this.script === undefined)
 			{
-				this.script = this.getFileData("js");
+				var _this = this;
+				var rawScript = this.getFileData("js");
+				if(rawScript)
+				{
+					var scriptTmplt = getCompiledScriptTemplate();
+					this.script = phnq_core.trimLines(scriptTmplt(
+					{
+						type: _this.type,
+						script: rawScript
+					}));
+				}
+				else
+				{
+					this.script = "";
+				}
 			}
 			return this.script;
 		},
 
 		getStyle: function()
 		{
-			if(!this.style)
+			if(this.style === undefined)
 			{
-				this.style = this.getFileData("css");
+				this.style = phnq_core.trimLines((this.getFileData("css") || "").replace(/SELF_CLASS/g, this.type.replace(/\./g, "\\.")));
 			}
 			return this.style;
 		},
@@ -50,7 +65,8 @@ require("phnq_log").exec("widget", function(log)
 					if(rootTag)
 					{
 						var classes = (node.attributes["class"] || "").trim().split(/\s*/);
-						classes.push(_this.type);
+						classes.push("widget");
+						classes.push(_this.type); // type must be the last class -- it's how the type is determined on the client.
 						node.attributes["class"] = classes.join(" ");
 
 						var idAttr = node.attributes["id"];
@@ -98,6 +114,60 @@ require("phnq_log").exec("widget", function(log)
 			return this.compiledMarkup;
 		},
 
+		getDependencies: function()
+		{
+			if(!this.dependencies)
+			{
+				var deps = [];
+
+				/*
+				*	Dependencies from markup
+				*	Run the compiled markup function and intercept the calls to
+				*	widget(type).
+				*/
+				var markupFn = eval(this.getCompiledMarkup());
+				var idIdx = 0;
+				markupFn(
+				{
+					params: {},
+					widget: function(type)
+					{
+						var depWidget = require("./widget_manager").instance().getWidget(type);
+						if(depWidget)
+						{
+							var nestedDeps = depWidget.getDependencies();
+							for(var i=0; i<nestedDeps.length; i++)
+							{
+								deps.push(nestedDeps[i]);
+							}
+							deps.push(type);
+						}
+					},
+					nextId: function()
+					{
+						return "id_"+(idIdx++);
+					}
+				});
+
+				var rawScript = this.getFileData("js");
+				var rawScriptWrapperFn = eval(
+					"(function(context){ with(context){ try{" +
+					rawScript +
+					"}catch(ex){}}})"
+				);
+				rawScriptWrapperFn({
+					requireWidget: function(type)
+					{
+						deps.push(type);
+					}
+				});
+
+
+				this.dependencies = _.uniq(deps);
+			}
+			return this.dependencies;
+		},
+
 		getFileData: function(ext)
 		{
 			if(!this[ext+"File"])
@@ -121,28 +191,55 @@ require("phnq_log").exec("widget", function(log)
 		{
 			var title = this.type;
 
+			// Get Markup -- includes dependencies
 			var markupFn = eval(this.getCompiledMarkup());
 			var markup = markupFn(context);
 
-			var shellFn = eval(getCompiledShellMarkup());
+			var types = this.getDependencies();
+			types.push(this.type);
+			var typesLen = types.length;
+
+			// Aggregate the scripts and styles
+			var scriptBuf = [];
+			var styleBuf = [];
+			for(var i=0; i<typesLen; i++)
+			{
+				var depWidget = require("./widget_manager").instance().getWidget(types[i]);
+				scriptBuf.push(depWidget.getScript());
+				styleBuf.push(depWidget.getStyle());
+			}
+
+			var shellFn = getCompiledShellMarkupTemplate();
 			var shellCode = shellFn(
 			{
 				title: title,
 				prefix: config.uriPrefix,
-				body: markup
+				body: markup,
+				script: scriptBuf.join(""),
+				style: styleBuf.join("")
 			});
 
 			return shellCode;
 		}
 	});
 
-	var compiledShellMarkup = null;
-	var getCompiledShellMarkup = function()
+	var compiledShellMarkupTemplate = null;
+	var getCompiledShellMarkupTemplate = function()
 	{
-		if(!compiledShellMarkup)
+		if(!compiledShellMarkupTemplate)
 		{
-			compiledShellMarkup = phnq_ejs.compile(_fs.readFileSync(__dirname+"/shell.html.ejs", "UTF-8")); 
+			compiledShellMarkupTemplate = eval(phnq_ejs.compile(_fs.readFileSync(__dirname+"/shell.html.ejs", "UTF-8"))); 
 		}
-		return compiledShellMarkup;
+		return compiledShellMarkupTemplate;
+	};
+
+	var compiledScriptTemplate = null;
+	var getCompiledScriptTemplate = function()
+	{
+		if(!compiledScriptTemplate)
+		{
+			compiledScriptTemplate = eval(phnq_ejs.compile(_fs.readFileSync(__dirname+"/script.js.ejs", "UTF-8"))); 
+		}
+		return compiledScriptTemplate;
 	};
 });

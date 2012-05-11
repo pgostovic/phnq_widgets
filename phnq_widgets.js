@@ -1,7 +1,7 @@
 require("phnq_log").exec("phnq_widgets", function(log)
 {
 	var app = require("express").createServer();
-	var widgetManager = require("./widget_manager").create();
+	var widgetManager = require("./widget_manager").instance();
 	var _fs = require("fs");
 	var _path = require("path");
 	var phnq_core = require("phnq_core");
@@ -93,7 +93,8 @@ require("phnq_log").exec("phnq_widgets", function(log)
 		[
 			"client/jquery-1.7.2.min.js",
 			"phnq_core",
-			"phnq_log"
+			"phnq_log",
+			"client/widgets.js"
 		];
 
 		var buf = [];
@@ -111,6 +112,18 @@ require("phnq_log").exec("phnq_widgets", function(log)
 			if(filename)
 				buf.push(_fs.readFileSync(filename, "UTF-8"));
 		}
+
 		return clientBoot = buf.join("");
+
+		// var jsp = require("uglify-js").parser;
+		// var pro = require("uglify-js").uglify;
+
+		// var orig_code = buf.join("");
+		// var ast = jsp.parse(orig_code); // parse code and get the initial AST
+		// ast = pro.ast_mangle(ast); // get a new AST with mangled names
+		// ast = pro.ast_squeeze(ast); // get an AST with compression optimizations
+		// var final_code = pro.gen_code(ast); // compressed code here		
+
+		// return clientBoot = final_code;
 	};
 });
