@@ -1,7 +1,7 @@
 require("phnq_log").exec("phnq_widgets", function(log)
 {
 	var _ = require("underscore");
-	var app = require("express").createServer();
+	var app = null;
 	var widgetManager = require("./widget_manager").instance();
 	var _fs = require("fs");
 	var _path = require("path");
@@ -15,11 +15,95 @@ require("phnq_log").exec("phnq_widgets", function(log)
 			widgetManager.addScanPath(path);
 		},
 
-		listen: function(port)
+		start: function(options)
 		{
-			port = port || 8888;
-			app.listen(port);
+			options = options || {};
+			options.port = options.port || 8888;
+
+			if(options.express)
+			{
+				app = options.express;
+			}
+			else
+			{
+				app = require("express").createServer();
+				app.listen(options.port);
+			}
 			setRoutes();
+		},
+
+		getApp: function()
+		{
+			return app;
+		},
+
+		widgetRenderer: function(options)
+		{
+			return function(req, res, next)
+			{
+				res.renderWidget = function(type, context)
+				{
+					phnq_widgets.renderWidget(type, context||{}, req, res, next);
+				};
+				next();
+			};
+		},
+
+		renderWidget: function(type, context, req, res, next)
+		{
+			widgetManager.getWidget(type, function(err, widget)
+			{
+				if(err)
+				{
+					if(next)
+						return next(err);
+					else
+						return res.send(500, err);
+				}
+
+				if(!widget)
+					return res.send(404);
+
+				/*
+				*	The context object is what is passed into the compiled markup
+				*	template function.  This must be duplicated on the client too
+				*	with alternative, client-specific implementations.
+				*/
+				var nextIdIdx = 0;
+				phnq_core.extend(context,
+				{
+					params: req.query,
+
+					nextId: function()
+					{
+						return config.idPrefix + (nextIdIdx++);
+					},
+
+					widget: function(type, options)
+					{
+						options = options || {};
+						options.lazy = !!options.lazy;
+
+						if(options.lazy)
+						{
+							var wphBuf = [];
+							wphBuf.push("<ul class=\"wph "+type+"\">");
+							// params as <li>'s
+							wphBuf.push("</ul>");
+							return wphBuf.join("");
+						}
+						else
+						{
+							var widget = widgetManager.getWidget(type);
+							var markupFn = eval(widget.getCompiledMarkup());
+							var markup = markupFn(this);
+							return markup;
+						}
+					}
+				});
+
+				res.send(widget.getWidgetShellCode(context));
+			});
 		},
 
 		config: config
@@ -97,65 +181,20 @@ require("phnq_log").exec("phnq_widgets", function(log)
 
 		app.get(config.uriPrefix+"/:widgetType", function(req, res)
 		{
-			if(!req.widget)
-				return res.send(404);
-
-			/*
-			*	The context object is what is passed into the compiled markup
-			*	template function.  This must be duplicated on the client too
-			*	with alternative, client-specific implementations.
-			*/
-			var nextIdIdx = 0;
-			var context =
-			{
-				params: req.query,
-				widget: function(type, options)
-				{
-					options = options || {};
-					options.lazy = !!options.lazy;
-
-					if(options.lazy)
-					{
-						var wphBuf = [];
-						wphBuf.push("<ul class=\"wph "+type+"\">");
-						// params as <li>'s
-						wphBuf.push("</ul>");
-						return wphBuf.join("");
-					}
-					else
-					{
-						var widget = widgetManager.getWidget(type);
-						var markupFn = eval(widget.getCompiledMarkup());
-						var markup = markupFn(this);
-						return markup;
-					}
-				},
-				nextId: function()
-				{
-					return config.idPrefix + (nextIdIdx++);
-				}
-			};
-
-			res.send(req.widget.getWidgetShellCode(context));
+			phnq_widgets.renderWidget(req.params.widgetType, {}, req, res);
 		});
 
 		app.get(config.uriPrefix+"/:widgetType/static/:staticPath", function(req, res)
 		{
-			if(!req.widget)
-				return res.send(404);
-
-			res.sendfile(_path.join(req.widget.dir, "static", req.params.staticPath));
-		});
-
-		app.param("widgetType", function(req, res, next, widgetType)
-		{
-			widgetManager.getWidget(widgetType, function(err, widget)
+			widgetManager.getWidget(req.params.widgetType, function(err, widget)
 			{
 				if (err)
-					return next(err);
+					return res.send(err);
 
-				req.widget = widget;
-				next();
+				if(!widget)
+					return res.send(404);
+
+				res.sendfile(_path.join(widget.dir, "static", req.params.staticPath));
 			});
 		});
 	};
