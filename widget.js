@@ -64,10 +64,11 @@ require("phnq_log").exec("widget", function(log)
 				{
 					if(rootTag)
 					{
-						var classes = (node.attributes["class"] || "").trim().split(/\s*/);
+						_this.rootTagName = node.name;
+						var classes = (node.attributes["class"] || "").trim().split(/\s+/);
 						classes.push("widget");
 						classes.push(_this.type); // type must be the last class -- it's how the type is determined on the client.
-						node.attributes["class"] = classes.join(" ");
+						node.attributes["class"] = classes.join(" ").trim();
 
 						var idAttr = node.attributes["id"];
 						if(!idAttr)
@@ -238,7 +239,8 @@ require("phnq_log").exec("widget", function(log)
 				body: markup,
 				extScript: extScriptBuf.join(""),
 				script: scriptBuf.join(""),
-				style: styleBuf.join("")
+				style: styleBuf.join(""),
+				widget: this
 			});
 
 			return shellCode;
