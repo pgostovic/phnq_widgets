@@ -173,7 +173,6 @@ phnq_log.exec("widgets", function(log)
             	var script = res.scripts.join("");
             	if(script)
             		eval(script);
-	        		$("head").append("<style type='text/css'>"+style+"</style>");
 
                 fn();
             });
