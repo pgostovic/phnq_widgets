@@ -21,6 +21,8 @@ require("phnq_log").exec("widget_manager", function(log)
 		{
 			this.scanPaths = [];
 			this.widgets = null;
+			this.lastScanMillis = 0;
+			this.watched = {};
 		},
 
 		addScanPath: function(path)
@@ -59,10 +61,33 @@ require("phnq_log").exec("widget_manager", function(log)
 			}
 		},
 
+		watch: function(path)
+		{
+			if(!this.watched[path])
+			{
+				var _this = this;
+				this.watched[path] = true;
+				fs.watch(path, {persistent:false}, function()
+				{
+					_this.widgets = null;
+					_this.scan(function(){});
+				});
+			}
+		},
+
 		scan: function(fn)
 		{
 			if(this.widgets)
 				return fn();
+
+			var nowMillis = new Date().getTime();
+
+			if((nowMillis - this.lastScanMillis) < 2000)
+				return fn();
+
+			log.info("Scanning for widgets...");
+
+			this.lastScanMillis = nowMillis;
 
 			if(this.scanPaths.length == 0)
 				this.addScanPath("widgets");
@@ -96,6 +121,8 @@ require("phnq_log").exec("widget_manager", function(log)
 		{
 			var _this = this;
 
+			_this.watch(path);
+
 			fs.readdir(path, function(err, names)
 			{
 				var next = function()
@@ -119,6 +146,8 @@ require("phnq_log").exec("widget_manager", function(log)
 							}
 							else
 							{
+								_this.watch(f);
+
 								var m = /[^\.]*\.(ejs|js|css)/.exec(name);
 								if(m)
 								{
