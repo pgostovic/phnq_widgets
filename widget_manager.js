@@ -70,7 +70,6 @@ require("phnq_log").exec("widget_manager", function(log)
 				fs.watch(path, {persistent:false}, function()
 				{
 					_this.widgets = null;
-					_this.scan(function(){});
 				});
 			}
 		},
