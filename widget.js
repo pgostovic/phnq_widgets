@@ -121,6 +121,12 @@ require("phnq_log").exec("widget", function(log)
 			{
 				var deps = [];
 
+				// TODO: this does not completely work -- if any calls to widget() are
+				// nested within some condition then, depending on the condition, the
+				// the widget() function may not get called nor, thus, intercepted. The
+				// result is that embedded widgets may not be recognized as dependencies.
+				// Might need to use regex to extract dependencies in templates.
+
 				/*
 				*	Dependencies from markup
 				*	Run the compiled markup function and intercept the calls to
@@ -203,6 +209,11 @@ require("phnq_log").exec("widget", function(log)
 
 			var types = this.getDependencies();
 			types.push(this.type);
+			_.each(context.embedded, function(type)
+			{
+				types.push(type);
+			});
+			types = _.uniq(types);
 			var typesLen = types.length;
 
 			// Aggregate the scripts and styles

@@ -72,6 +72,8 @@ require("phnq_log").exec("phnq_widgets", function(log)
 				var nextIdIdx = 0;
 				phnq_core.extend(context,
 				{
+					embedded: [],
+
 					params: req.query,
 
 					nextId: function()
@@ -94,6 +96,7 @@ require("phnq_log").exec("phnq_widgets", function(log)
 						}
 						else
 						{
+							this.embedded.push(type);
 							var widget = widgetManager.getWidget(type);
 							var markupFn = eval(widget.getCompiledMarkup());
 							var markup = markupFn(this);
