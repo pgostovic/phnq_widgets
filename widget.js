@@ -43,7 +43,7 @@ require("phnq_log").exec("widget", function(log)
 		{
 			if(this.style === undefined)
 			{
-				this.style = phnq_core.trimLines((this.getFileData("css") || "").replace(/SELF_CLASS/g, this.type.replace(/\./g, "\\.")));
+				this.style = phnq_core.trimLines((this.getFileData("css") || "").replace(/__CLASS__/g, this.type.replace(/\./g, "\\.")));
 			}
 			return this.style;
 		},
