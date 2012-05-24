@@ -42,7 +42,7 @@ phnq_log.exec("widgets", function(log)
 				find: function(type)
 				{
 					var found = [];
-					this.$$(".winst").each(function()
+					this.get$$()(".winst").each(function()
 					{
 						var widgetObj = $(this).data("widget");
 						if(widgetObj.type == type)
