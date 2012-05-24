@@ -81,8 +81,25 @@ require("phnq_log").exec("phnq_widgets", function(log)
 						return config.idPrefix + (nextIdIdx++);
 					},
 
-					widget: function(type, options)
+					widget: function(type /* , options, bodyFn */)
 					{
+						var options=null, bodyFn=null;
+
+						for(var i=1; i<arguments.length; i++)
+						{
+							if(!options && typeof(arguments[i]) == "object")
+								options = arguments[i];
+							else if(!options && typeof(arguments[i]) == "function")
+								bodyFn = arguments[i];
+						}
+
+						if(bodyFn)
+						{
+							var buf = [];
+							bodyFn(buf);
+							this.body = buf.join("");
+						}
+
 						options = options || {};
 						options.lazy = !!options.lazy;
 
@@ -100,6 +117,7 @@ require("phnq_log").exec("phnq_widgets", function(log)
 							var widget = widgetManager.getWidget(type);
 							var markupFn = eval(widget.getCompiledMarkup());
 							var markup = markupFn(this);
+							this.body = null;
 							return markup;
 						}
 					}
