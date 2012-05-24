@@ -2,8 +2,6 @@ var widget =
 {
     ready: function($$)
     {
-        var _this = this;
-
         this.elements = $$("> *");
         this.show(0);
     },
