@@ -37,15 +37,29 @@ phnq_log.exec("widgets", function(log)
 	                    };
 	                }
 	                return this.$$;
+				},
+
+				find: function(type)
+				{
+					var found = [];
+					this.$$(".winst").each(function()
+					{
+						var widgetObj = $(this).data("widget");
+						if(widgetObj.type == type)
+							found.push(widgetObj);
+					});
+					return found;
 				}
 			});
 		},
 
-		scan: function(fn)
+		scan: function(fn, newlyAdded)
 		{
 			var _this = this;
 			var added = false;
 			var toLoad = [];
+
+			newlyAdded = newlyAdded || [];
 
 			// Turn widget placeholders into widgets (markup only), or if no
 			// markup available, add type to a list of types to load.
@@ -99,13 +113,16 @@ phnq_log.exec("widgets", function(log)
 				var type = $(widgetElmnt).attr("class").split(/\s+/).pop();
 
 				$(widgetElmnt).removeClass("widget");
+				$(widgetElmnt).addClass("winst");
 
 				var widgetClass = widgetClasses[type];
 				if(widgetClass)
 				{
 					var widget = new widgetClass();
+					widget.type = type;
 					widget.elmntId = $(widgetElmnt).attr("id");
-					widget._ready();
+					$(widgetElmnt).data("widget", widget);
+					newlyAdded.push(widget);
 				}
 			});
 
@@ -114,9 +131,18 @@ phnq_log.exec("widgets", function(log)
 			this.load(toLoad, function()
 			{
 				if(added || toLoad.length > 0)
-					_this.scan();
-				else if(fn)
-					fn();
+				{
+					_this.scan(fn, newlyAdded);
+				}
+				else
+				{
+					$(newlyAdded).each(function()
+					{
+						this._ready();
+					});
+					if(fn)
+						fn();
+				}
 			});
 		},
 
