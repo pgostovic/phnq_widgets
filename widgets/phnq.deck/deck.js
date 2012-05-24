@@ -1,0 +1,21 @@
+var widget =
+{
+    ready: function($$)
+    {
+        var _this = this;
+
+        this.elements = $$("> *");
+        this.show(0);
+    },
+
+    show: function(idx)
+    {
+        for(var i=0; i<this.elements.length; i++)
+        {
+            if(i == idx)
+                $(this.elements[i]).show();
+            else
+                $(this.elements[i]).hide();
+        }
+    }
+};
