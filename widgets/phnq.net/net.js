@@ -15,7 +15,20 @@ phnq.net =
     }
 };
 
-var sameDomain = location.href.indexOf(phnq_core.baseURI) == 0;
+var hostPortRe = /^(https?):\/\/([^\/:]*)(:(\d*))?.*$/;
+var pageHostPortM = hostPortRe.exec(location.href);
+var pageScheme = pageHostPortM[1];
+var pageHost = pageHostPortM[2];
+var pagePort = pageHostPortM[4] || (pageScheme == "http" ? 80 : 443);
+
+var isSameOriginAsPage = function(url)
+{
+    var urlHostPortM = hostPortRe.exec(url);
+    var urlScheme = urlHostPortM[1];
+    var urlHost = urlHostPortM[2];
+    var urlPort = urlHostPortM[4] || (urlScheme == "http" ? 80 : 443);
+    return urlScheme == pageScheme && urlHost == pageHost && urlPort == pagePort;
+};
 
 var req = function(method, url, data, fn, errorFn)
 {
@@ -24,7 +37,7 @@ var req = function(method, url, data, fn, errorFn)
     if(!url.match(/^https?:\/\//))
         url = phnq_core.baseURI + url;
 
-    if(sameDomain) // use XHR
+    if(isSameOriginAsPage(url)) // use XHR
     {
         $.ajax(
         {
