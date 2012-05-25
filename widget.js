@@ -111,6 +111,8 @@ require("phnq_log").exec("widget", function(log)
 				ejs = buf.join("");
 
 				this.compiledMarkup = phnq_ejs.compile(ejs);
+
+				// log.debug("==================== COMPILED EJS: %s ====================\n%s\n--------------------------------------------------", this.type, this.compiledMarkup);
 			}
 			return this.compiledMarkup;
 		},
@@ -175,7 +177,15 @@ require("phnq_log").exec("widget", function(log)
 					}
 				});
 
-				this.dependencies = _.uniq(deps);
+				// add dependents' dependencies
+				var depDeps = [];
+				for(var i=0; i<deps.length; i++)
+				{
+					var depWidget = require("./widget_manager").instance().getWidget(deps[i]);
+					depDeps = _.union(depDeps, depWidget.getDependencies());
+				}
+
+				this.dependencies = _.uniq(_.union(deps, depDeps));
 			}
 			return this.dependencies;
 		},
