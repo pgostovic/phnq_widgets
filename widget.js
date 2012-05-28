@@ -7,6 +7,9 @@ require("phnq_log").exec("widget", function(log)
 	var config = require("./config");
 	var _ = require("underscore");
 
+	var URL_REGEX = /url\("?([^)\"]*)"?\)/g;
+	var EMPTY_TAGS = ["base", "basefont", "br", "col", "frame", "hr", "img", "input", "link", "meta", "param"];
+
 	module.exports = phnq_core.clazz(
 	{
 		init: function(dir)
@@ -44,6 +47,23 @@ require("phnq_log").exec("widget", function(log)
 			if(this.style === undefined)
 			{
 				this.style = phnq_core.trimLines((this.getFileData("css") || "").replace(/__CLASS__/g, this.type.replace(/\./g, "\\.")));
+
+				var buf = [];
+				var m;
+				var idx = 0;
+				while((m = URL_REGEX.exec(this.style)))
+				{
+					buf.push(this.style.substring(idx, m.index));
+					var url = m[1];
+					if(!url.match(/^(\/|data:|https?:)/))
+					{
+						url = config.uriPrefix + "/" + this.type + "/" + url;
+					}
+					buf.push("url("+url+")");
+					idx = URL_REGEX.lastIndex;
+				}
+				buf.push(this.style.substring(idx));
+				this.style = buf.join("");
 			}
 			return this.style;
 		},
@@ -90,7 +110,7 @@ require("phnq_log").exec("widget", function(log)
 
 				parser.onclosetag = function(tagName)
 				{
-					if(bufLen == buf.length)
+					if(bufLen == buf.length && _.include(EMPTY_TAGS, tagName))
 					{
 						buf.pop();
 						buf.push("/>");
@@ -182,7 +202,8 @@ require("phnq_log").exec("widget", function(log)
 				for(var i=0; i<deps.length; i++)
 				{
 					var depWidget = require("./widget_manager").instance().getWidget(deps[i]);
-					depDeps = _.union(depDeps, depWidget.getDependencies());
+					if(depWidget)
+						depDeps = _.union(depDeps, depWidget.getDependencies());
 				}
 
 				this.dependencies = _.uniq(_.union(deps, depDeps));
