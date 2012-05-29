@@ -74,11 +74,25 @@ phnq_log.exec("widgets", function(log)
 			});
 		},
 
-		scan: function(fn, newlyAdded)
+		scan: function(/* options, fn, newlyAdded */)
 		{
+			var options, fn, newlyAdded;
+			for(var i=0; i<arguments.length; i++)
+			{
+				var arg = arguments[i];
+				if(typeof(arg) == "function")
+					fn = arg;
+				else if(arg instanceof Array)
+					newlyAdded = arg;
+				else if(typeof(arg) == "object")
+					options = arg;
+			}
+
 			var _this = this;
 			var added = false;
 			var toLoad = [];
+
+			options = options || {};
 
 			newlyAdded = newlyAdded || [];
 
@@ -153,15 +167,19 @@ phnq_log.exec("widgets", function(log)
 			{
 				if(added || toLoad.length > 0)
 				{
-					_this.scan(fn, newlyAdded);
+					_this.scan(fn, newlyAdded, options);
 				}
 				else
 				{
+					if(options.delayLifecycle && fn)
+						fn();
+
 					$(newlyAdded).each(function()
 					{
 						this._ready();
 					});
-					if(fn)
+
+					if(!options.delayLifecycle && fn)
 						fn();
 				}
 			});
@@ -236,11 +254,27 @@ phnq_log.exec("widgets", function(log)
 		// not needed on client...
 	};
 
-
 	(function($)
 	{
 		var methods =
 		{
+			scan: function(fn)
+			{
+				phnq_widgets.scan.apply(phnq_widgets, arguments);
+			},
+
+			wph: function(type, params)
+			{
+				var buf = [];
+				buf.push("<ul class=\"wph "+type+"\">");
+				for(var k in params)
+				{
+					buf.push("<li name=\""+k+"\">"+JSON.stringify(params[k])+"</li>");
+				}
+				buf.push("</ul>");
+				return buf.join("");
+			},
+
 			set: function(type, params, fn)
 			{
 				var buf = [];
