@@ -2,8 +2,7 @@ phnq_log.exec("<%=type%>", function(log)
 {
 	<%=script%>
 
-	if(typeof(widget) == "object")
-		phnq_widgets.create("<%=type%>", widget);
-	else
-		phnq_widgets.create("<%=type%>");
+	var _widget = typeof(widget) == "object" ? widget : {};
+	_widget._partialTemplates = <%=partialTemplates%>;
+	phnq_widgets.create("<%=type%>", _widget);
 });

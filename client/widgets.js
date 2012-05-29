@@ -49,6 +49,27 @@ phnq_log.exec("widgets", function(log)
 							found.push(widgetObj);
 					});
 					return found;
+				},
+
+				renderPartial: function(name, data)
+				{
+					var buf = [];
+					var partialTmplt = this._partialTemplates[name];
+					if(partialTmplt)
+					{
+						data = data instanceof Array ? data : [data];
+						var partialFn = eval(partialTmplt);
+						var dataLen = data.length;
+						for(var i=0; i<dataLen; i++)
+						{
+							buf.push(partialFn(data[i]));
+						}
+					}
+					else
+					{
+						throw "No partial named '"+name+"' in "+this.type;
+					}
+					return buf.join("");
 				}
 			});
 		},
@@ -214,4 +235,54 @@ phnq_log.exec("widgets", function(log)
 	{
 		// not needed on client...
 	};
+
+
+	(function($)
+	{
+		var methods =
+		{
+			set: function(type, params, fn)
+			{
+				var buf = [];
+				var paramsArr = params instanceof Array ? params : [params];
+				var numParams = paramsArr.length;
+
+				for(var i=0; i<numParams; i++)
+				{
+					var pObj = paramsArr[i];
+					buf.push("<ul class=\"wph "+type+"\">");
+					for(var k in pObj)
+					{
+						buf.push("<li name=\""+k+"\">"+pObj[k]+"</li>");
+					}
+					buf.push("</ul>");
+				}
+
+				log.debug("BBB: ", buf.join(""));
+
+				this.each(function()
+				{
+					$(this).html(buf.join(""));
+				});
+
+				phnq_widgets.scan(fn);
+			}
+		};
+
+		$.fn.widgets = function(method)
+		{
+			if( methods[method])
+			{
+				return methods[method].apply( this, Array.prototype.slice.call(arguments, 1));
+			}
+			else if (typeof method === 'object' || ! method)
+			{
+				return methods.init.apply(this, arguments);
+			}
+			else
+			{
+				$.error('Method ' +  method + ' does not exist on jQuery.widgets');
+			}    
+		};
+	})(jQuery);
 });

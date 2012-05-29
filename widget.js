@@ -16,6 +16,7 @@ require("phnq_log").exec("widget", function(log)
 		{
 			this.type = _path.basename(dir);
 			this.dir = dir;
+			this.partials = {};
 			log.debug("discovered widget: ", this.type);
 		},
 
@@ -31,7 +32,8 @@ require("phnq_log").exec("widget", function(log)
 					this.script = phnq_core.trimLines(scriptTmplt(
 					{
 						type: _this.type,
-						script: rawScript
+						script: rawScript,
+						partialTemplates: JSON.stringify(_this.getCompiledPartials())
 					}));
 				}
 				else
@@ -72,69 +74,93 @@ require("phnq_log").exec("widget", function(log)
 		{
 			if(!this.compiledMarkup)
 			{
-				var _this = this;
-				var ejs = this.getFileData("ejs");
-				var sax = require("sax");
-				var parser = sax.parser(true);
-				var buf = [];
-				var bufLen = 0;
-				var rootTag = true;
+				this.compiledMarkup = this.compileTemplate(this.getFileData("ejs"), "<%=nextId()%>", ["widget", this.type]);
+			}
+			return this.compiledMarkup;
+		},
 
-				parser.onopentag = function(node)
+		getCompiledPartials: function()
+		{
+			if(!this.compiledPartials)
+			{
+				this.compiledPartials = {};
+				for(var k in this.partials)
 				{
-					if(rootTag)
-					{
-						_this.rootTagName = node.name;
-						var classes = (node.attributes["class"] || "").trim().split(/\s+/);
-						classes.push("widget");
-						classes.push(_this.type); // type must be the last class -- it's how the type is determined on the client.
-						node.attributes["class"] = classes.join(" ").trim();
+					var ejs = _fs.readFileSync(this.partials[k], "UTF-8");
+					this.compiledPartials[k] = this.compileTemplate(ejs);
+				}
+			}
+			return this.compiledPartials;
+		},
 
+		compileTemplate: function(ejs, id, classesExt)
+		{
+			var _this = this;
+			var sax = require("sax");
+			var parser = sax.parser(true);
+			var buf = [];
+			var bufLen = 0;
+			var rootTag = true;
+
+			parser.onopentag = function(node)
+			{
+				if(rootTag)
+				{
+					_this.rootTagName = node.name;
+					if(classesExt)
+					{
+						var classes = (node.attributes["class"] || "").trim().split(/\s+/);
+						for(var i=0; i<classesExt.length; i++)
+						{
+							classes.push(classesExt[i]);
+						}
+						node.attributes["class"] = classes.join(" ").trim();
+					}
+
+					if(id)
+					{
 						var idAttr = node.attributes["id"];
 						if(!idAttr)
 						{
-							node.attributes["id"] = "<%=nextId()%>";
+							node.attributes["id"] = id;
 						}
 					}
+				}
 
-					buf.push("<"+node.name);
-					for(var k in node.attributes)
-					{
-						var v = _this.absolutizePathIfNeeded("", node.name, k, node.attributes[k]);
-						buf.push(" "+k+"=\""+v+"\"");
-					}
-					buf.push(">");
-					bufLen = buf.length;
-					rootTag = false;
-				};
-
-				parser.onclosetag = function(tagName)
+				buf.push("<"+node.name);
+				for(var k in node.attributes)
 				{
-					if(bufLen == buf.length && _.include(EMPTY_TAGS, tagName))
-					{
-						buf.pop();
-						buf.push("/>");
-					}
-					else
-					{
-						buf.push("</"+tagName+">");
-					}
-				};
+					var v = _this.absolutizePathIfNeeded("", node.name, k, node.attributes[k]);
+					buf.push(" "+k+"=\""+v+"\"");
+				}
+				buf.push(">");
+				bufLen = buf.length;
+				rootTag = false;
+			};
 
-				parser.ontext = function(text)
+			parser.onclosetag = function(tagName)
+			{
+				if(bufLen == buf.length && _.include(EMPTY_TAGS, tagName))
 				{
-					buf.push(text);
-				};
+					buf.pop();
+					buf.push("/>");
+				}
+				else
+				{
+					buf.push("</"+tagName+">");
+				}
+			};
 
-				parser.write(ejs);
+			parser.ontext = function(text)
+			{
+				buf.push(text);
+			};
 
-				ejs = buf.join("");
+			parser.write(ejs);
 
-				this.compiledMarkup = phnq_ejs.compile(ejs);
+			ejs = buf.join("");
 
-				// log.debug("==================== COMPILED EJS: %s ====================\n%s\n--------------------------------------------------", this.type, this.compiledMarkup);
-			}
-			return this.compiledMarkup;
+			return phnq_ejs.compile(ejs);
 		},
 
 		getDependencies: function()
@@ -185,17 +211,25 @@ require("phnq_log").exec("widget", function(log)
 				});
 
 				var rawScript = this.getFileData("js");
-				var rawScriptWrapperFn = eval(
-					"(function(context){ with(context){ try{" +
-					rawScript +
-					"}catch(ex){}}})"
-				);
-				rawScriptWrapperFn({
-					depend: function(type)
-					{
-						deps.push(type);
-					}
-				});
+
+				try
+				{
+					var rawScriptWrapperFn = eval(
+						"(function(context){ with(context){ try{" +
+						rawScript +
+						"}catch(ex){}}})"
+					);
+					rawScriptWrapperFn({
+						depend: function(type)
+						{
+							deps.push(type);
+						}
+					});
+				}
+				catch(ex)
+				{
+					log.error(ex);
+				}
 
 				// add dependents' dependencies
 				var depDeps = [];

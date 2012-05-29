@@ -150,10 +150,19 @@ require("phnq_log").exec("widget_manager", function(log)
 								var m = /[^\.]*\.(ejs|js|css)/.exec(name);
 								if(m)
 								{
+									var filename = _path.basename(f);
 									var ext = m[1];
 									var type = _path.basename(_path.dirname(f));
 									var widget = _this.widgets[type] || (_this.widgets[type] = new Widget(_path.dirname(f)));
-									widget[ext+"File"] = f;
+									var partialMatch = /^_([^.]*).html.ejs/.exec(filename);
+									if(partialMatch)
+									{
+										widget.partials[partialMatch[1]] = f;
+									}
+									else
+									{
+										widget[ext+"File"] = f;
+									}
 									next();
 								}
 								else
