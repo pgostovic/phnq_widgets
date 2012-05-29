@@ -229,6 +229,7 @@ require("phnq_log").exec("phnq_widgets", function(log)
 		var bootFiles =
 		[
 			"client/jquery-1.7.2.min.js",
+			"client/json2.js",
 			"phnq_core",
 			"phnq_log",
 			"client/widgets.js"

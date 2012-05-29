@@ -1,5 +1,3 @@
-depend("ext.json2");
-
 window.phnq = window.phnq || {};
 
 phnq.net =
