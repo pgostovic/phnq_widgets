@@ -184,13 +184,14 @@ require("phnq_log").exec("widget", function(log)
 				var idIdx = 0;
 				markupFn(
 				{
+					query: {},
 					params: {},
-					widget: function(type, options)
+					widget: function(type, params)
 					{
-						options = options || {};
-						options.lazy = !!options.lazy;
+						params = params || {};
+						var isLazy = !!params._lazy;
 
-						if(!options.lazy)
+						if(!isLazy)
 						{
 							var depWidget = require("./widget_manager").instance().getWidget(type);
 							if(depWidget)

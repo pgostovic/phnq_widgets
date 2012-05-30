@@ -103,26 +103,26 @@ phnq_log.exec("widgets", function(log)
 				added = true;
 				var wphElmnt = this;
 				var type = $(wphElmnt).attr("class").split(/\s+/).pop();
-
 				var tmpltFn = widgetTmpltFns[type];
 				if(tmpltFn)
 				{
-					var markup = tmpltFn(
+					var params = JSON.parse($(wphElmnt).text());
+					var context =
 					{
-						params: {},
-						widget: function(type)
+						params: params,
+						query: getQueryParams(),
+						widget: function(type, params)
 						{
-							var wphBuf = [];
-							wphBuf.push("<ul class=\"wph "+type+"\">");
-							// params as <li>'s
-							wphBuf.push("</ul>");
-							return wphBuf.join("");
+							return $().widgets("wph", type, params);
 						},
 						nextId: function()
 						{
 							return phnq_widgets.config.idPrefixClient + (nextIdIdx++);
 						}
-					});
+					};
+
+					var markup = tmpltFn(context);
+
                     $(wphElmnt).replaceWith(markup);
 				}
 				else
@@ -254,6 +254,25 @@ phnq_log.exec("widgets", function(log)
 		// not needed on client...
 	};
 
+	var queryParams = null;
+	var getQueryParams = function()
+	{
+		if(!queryParams)
+		{
+			queryParams = {};
+			if(location.search.match(/^\?/))
+			{
+				$(location.search.substring(1).split("&")).each(function()
+				{
+					var nvp = this.split("=");
+					if(nvp.length == 2)
+						queryParams[nvp[0]] = unescape(nvp[1]);
+				});
+			}
+		}
+		return queryParams;
+	};
+
 	(function($)
 	{
 		var methods =
@@ -265,41 +284,7 @@ phnq_log.exec("widgets", function(log)
 
 			wph: function(type, params)
 			{
-				var buf = [];
-				buf.push("<ul class=\"wph "+type+"\">");
-				for(var k in params)
-				{
-					buf.push("<li name=\""+k+"\">"+JSON.stringify(params[k])+"</li>");
-				}
-				buf.push("</ul>");
-				return buf.join("");
-			},
-
-			set: function(type, params, fn)
-			{
-				var buf = [];
-				var paramsArr = params instanceof Array ? params : [params];
-				var numParams = paramsArr.length;
-
-				for(var i=0; i<numParams; i++)
-				{
-					var pObj = paramsArr[i];
-					buf.push("<ul class=\"wph "+type+"\">");
-					for(var k in pObj)
-					{
-						buf.push("<li name=\""+k+"\">"+pObj[k]+"</li>");
-					}
-					buf.push("</ul>");
-				}
-
-				log.debug("BBB: ", buf.join(""));
-
-				this.each(function()
-				{
-					$(this).html(buf.join(""));
-				});
-
-				phnq_widgets.scan(fn);
+				return "<span class=\"wph "+type+"\">"+JSON.stringify(params)+"</span>";
 			}
 		};
 

@@ -74,52 +74,59 @@ require("phnq_log").exec("phnq_widgets", function(log)
 				{
 					embedded: [],
 
-					params: req.query,
+					query: req.query,
+
+					params: {},
 
 					nextId: function()
 					{
 						return config.idPrefix + (nextIdIdx++);
 					},
 
-					widget: function(type /* , options, bodyFn */)
+					widget: function(type /* , params, bodyFn */)
 					{
-						var options=null, bodyFn=null;
+						var params=null, bodyFn=null;
 
 						for(var i=1; i<arguments.length; i++)
 						{
-							if(!options && typeof(arguments[i]) == "object")
-								options = arguments[i];
-							else if(!options && typeof(arguments[i]) == "function")
+							if(!params && typeof(arguments[i]) == "object")
+								params = arguments[i];
+							else if(!bodyFn && typeof(arguments[i]) == "function")
 								bodyFn = arguments[i];
 						}
 
+						params = params || {};
+						var isLazy = !!params._lazy;
+
 						if(bodyFn)
 						{
+							if(isLazy)
+								throw "A widget with a body function may not be loaded lazily: "+type;
+
 							var buf = [];
 							bodyFn(buf);
 							this.body = buf.join("");
 						}
 
-						options = options || {};
-						options.lazy = !!options.lazy;
+						this.params = params;
 
-						if(options.lazy)
+						var markup;
+						if(isLazy)
 						{
-							var wphBuf = [];
-							wphBuf.push("<ul class=\"wph "+type+"\">");
-							// params as <li>'s
-							wphBuf.push("</ul>");
-							return wphBuf.join("");
+							markup = "<span class=\"wph "+type+"\">"+JSON.stringify(this.params)+"</span>";
 						}
 						else
 						{
 							this.embedded.push(type);
 							var widget = widgetManager.getWidget(type);
 							var markupFn = eval(widget.getCompiledMarkup());
-							var markup = markupFn(this);
-							this.body = null;
-							return markup;
+							markup = markupFn(this);
 						}
+
+						this.params = {};
+						this.body = null;
+
+						return markup;
 					}
 				});
 
