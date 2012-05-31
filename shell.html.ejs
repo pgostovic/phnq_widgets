@@ -11,10 +11,10 @@
 			</style>
 		<% } %>
 		<script type="text/javascript" src="<%=prefix%>/boot"></script>
+		<%=extScript%>
 		<% if(aggScript) { %>
 			<script type="text/javascript" src="<%=prefix%>/agg/<%=aggScript%>.js"></script>
 		<% } %>
-		<%=extScript%>
 		<% if(inlineScript && inlineScript.match(/\S/)) { %>
 			<script type="text/javascript">
 				<%=inlineScript%>
