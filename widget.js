@@ -72,9 +72,18 @@ require("phnq_log").exec("widget", function(log)
 
 		getCompiledMarkup: function()
 		{
-			if(!this.compiledMarkup)
+			if(this.compiledMarkup === undefined)
 			{
-				this.compiledMarkup = this.compileTemplate(this.getFileData("ejs"), "<%=nextId()%>", ["widget", this.type]);
+				var ejs = this.getFileData("ejs");
+				if(ejs)
+				{
+					this.compiledMarkup = this.compileTemplate(ejs, "<%=nextId()%>", ["widget", this.type]);					
+					// log.debug("=================== %s ===================\n%s\n", this.type, this.compiledMarkup);
+				}
+				else
+				{
+					this.compiledMarkup = null;
+				}
 			}
 			return this.compiledMarkup;
 		},
@@ -180,36 +189,40 @@ require("phnq_log").exec("widget", function(log)
 				*	Run the compiled markup function and intercept the calls to
 				*	widget(type).
 				*/
-				var markupFn = eval(this.getCompiledMarkup());
-				var idIdx = 0;
-				markupFn(
+				var compiledMarkup = this.getCompiledMarkup();
+				if(compiledMarkup)
 				{
-					query: {},
-					params: {},
-					widget: function(type, params)
+					var markupFn = eval(compiledMarkup);
+					var idIdx = 0;
+					markupFn(
 					{
-						params = params || {};
-						var isLazy = !!params._lazy;
-
-						if(!isLazy)
+						query: {},
+						params: {},
+						widget: function(type, params)
 						{
-							var depWidget = require("./widget_manager").instance().getWidget(type);
-							if(depWidget)
+							params = params || {};
+							var isLazy = !!params._lazy;
+
+							if(!isLazy)
 							{
-								var nestedDeps = depWidget.getDependencies();
-								for(var i=0; i<nestedDeps.length; i++)
+								var depWidget = require("./widget_manager").instance().getWidget(type);
+								if(depWidget)
 								{
-									deps.push(nestedDeps[i]);
+									var nestedDeps = depWidget.getDependencies();
+									for(var i=0; i<nestedDeps.length; i++)
+									{
+										deps.push(nestedDeps[i]);
+									}
+									deps.push(type);
 								}
-								deps.push(type);
 							}
+						},
+						nextId: function()
+						{
+							return "id_"+(idIdx++);
 						}
-					},
-					nextId: function()
-					{
-						return "id_"+(idIdx++);
-					}
-				});
+					});
+				}
 
 				var rawScript = this.getFileData("js");
 

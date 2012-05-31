@@ -119,8 +119,16 @@ require("phnq_log").exec("phnq_widgets", function(log)
 						{
 							this.embedded.push(type);
 							var widget = widgetManager.getWidget(type);
-							var markupFn = eval(widget.getCompiledMarkup());
-							markup = markupFn(this);
+							var compiledMarkup = widget.getCompiledMarkup();
+							if(compiledMarkup)
+							{
+								var markupFn = eval(compiledMarkup);
+								markup = markupFn(this);
+							}
+							else
+							{
+								markup = "";
+							}
 						}
 
 						this.params = {};
