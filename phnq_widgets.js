@@ -207,6 +207,30 @@ require("phnq_log").exec("phnq_widgets", function(log)
 			res.send(buf.join(""));
 		});
 
+		app.get(config.uriPrefix+"/agg/:aggFile.js", function(req, res)
+		{
+			var path = _path.join(_path.dirname(process.argv[1]), "/agg/"+req.params.aggFile+".js");
+			_path.exists(path, function(exists)
+			{
+				if(!exists)
+					widgetManager.generateAggregateScript(req.params.aggFile);
+
+				res.sendfile(path);
+			});
+		});
+
+		app.get(config.uriPrefix+"/agg/:aggFile.css", function(req, res)
+		{
+			var path = _path.join(_path.dirname(process.argv[1]), "/agg/"+req.params.aggFile+".css");
+			_path.exists(path, function(exists)
+			{
+				if(!exists)
+					widgetManager.generateAggregateStyle(req.params.aggFile);
+
+				res.sendfile(path);
+			});
+		});
+
 		app.get(config.uriPrefix+"/:widgetType", function(req, res)
 		{
 			phnq_widgets.renderWidget(req.params.widgetType, {}, req, res);

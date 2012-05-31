@@ -2,25 +2,22 @@
 <html>
 	<head>
 		<title><%=title%></title>
-		<style type="text/css">
-			.wph
-			{
-				display: none;
-			}
-			.loadError
-			{
-				padding: 5px;
-				margin: 5px;
-				background: #c00;
-				color: #fff;
-			}
-			<%=style%>
-		</style>
+		<% if(aggStyle) { %>
+			<link rel="stylesheet" href="<%=prefix%>/agg/<%=aggStyle%>.css" type="text/css" media="screen" charset="utf-8"/>
+		<% } %>
+		<% if(inlineStyle && inlineStyle.match(/\S/)) { %>
+			<style type="text/css">
+				<%=inlineStyle%>
+			</style>
+		<% } %>
 		<script type="text/javascript" src="<%=prefix%>/boot"></script>
+		<% if(aggScript) { %>
+			<script type="text/javascript" src="<%=prefix%>/agg/<%=aggScript%>.js"></script>
+		<% } %>
 		<%=extScript%>
-		<% if(script && script.match(/\S/)) { %>
+		<% if(inlineScript && inlineScript.match(/\S/)) { %>
 			<script type="text/javascript">
-				<%=script%>
+				<%=inlineScript%>
 			</script>
 		<% } %>
 	</head>

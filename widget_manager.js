@@ -4,6 +4,9 @@ require("phnq_log").exec("widget_manager", function(log)
 	var fs = require("fs");
 	var _path = require("path");
 	var Widget = require("./widget");
+	var _ = require("underscore");
+	var config = require("./config");
+	var crypto = require("crypto");
 
 	var instance = null;
 
@@ -23,6 +26,11 @@ require("phnq_log").exec("widget_manager", function(log)
 			this.widgets = null;
 			this.lastScanMillis = 0;
 			this.watched = {};
+		},
+
+		getIndex: function()
+		{
+			return _.keys(this.widgets).sort();
 		},
 
 		addScanPath: function(path)
@@ -59,6 +67,132 @@ require("phnq_log").exec("widget_manager", function(log)
 			{
 				return this.widgets[type];
 			}
+		},
+
+		getAggregatedScriptName: function(types)
+		{
+			types.sort();
+
+			var index = this.getIndex();
+			var typesBitset = new phnq_core.BitSet();
+			for(var i=0; i<types.length; i++)
+			{
+				if(!types[i].match(/^https?:/))
+				{
+					var widget = this.getWidget(types[i]);
+					typesBitset.set(_.indexOf(index, types[i]));
+				}
+			}
+			var hash = crypto.createHash("md5");
+			var script = this.getAggregatedScript(types);
+			hash.update(script, "UTF-8");
+			return typesBitset.toArray().join("_") + "_" + hash.digest("hex");
+		},
+
+		getAggregatedStyleName: function(types)
+		{
+			types.sort();
+
+			var index = this.getIndex();
+			var typesBitset = new phnq_core.BitSet();
+			for(var i=0; i<types.length; i++)
+			{
+				if(!types[i].match(/^https?:/))
+				{
+					var widget = this.getWidget(types[i]);
+					typesBitset.set(_.indexOf(index, types[i]));
+				}
+			}
+			var hash = crypto.createHash("md5");
+			var style = this.getAggregatedStyle(types);
+			hash.update(style, "UTF-8");
+			return typesBitset.toArray().join("_") + "_" + hash.digest("hex");
+		},
+
+		getAggregatedScript: function(types)
+		{
+			return this.getAggregate(types, "script");
+		},
+
+		getAggregatedStyle: function(types)
+		{
+			return this.getAggregate(types, "style");
+		},
+
+		getAggregate: function(types, format)
+		{
+			var buf = [];
+
+			if(format == "style")
+			{
+				buf.push(".wph {display: none;}\n");
+				buf.push(".loadError { padding: 5px; margin: 5px; background: #c00; color: #fff; }\n");
+			}
+
+			var typesLen = types.length;
+			for(var i=0; i<typesLen; i++)
+			{
+				var type = types[i];
+				if(!type.match(/^https?:/))
+				{
+					try
+					{
+						var widget = this.getWidget(type);
+						if(format == "script")
+							buf.push(widget.getScript());
+						else if(format == "style")
+							buf.push(widget.getStyle());
+					}
+					catch(ex)
+					{
+						log.error("Error aggregating script dependency: ", type);
+					}
+				}
+			}
+			return buf.join("");
+		},
+
+		createAggDir: function()
+		{
+			var aggDir = _path.join(_path.dirname(process.argv[1]), "/agg/");
+			if(!_path.existsSync(aggDir))
+				fs.mkdirSync(aggDir);
+		},
+
+		generateAggregateScript: function(name)
+		{
+			var index = this.getIndex();
+			var comps = name.split("_");
+			comps.pop();
+			var typesBitset = new phnq_core.BitSet(comps);
+			var types = [];
+			for(var i=0; i<index.length; i++)
+			{
+				if(typesBitset.isSet(i))
+					types.push(index[i]);
+			}
+			var path = _path.join(_path.dirname(process.argv[1]), "/agg/"+this.getAggregatedScriptName(types)+".js");
+			log.debug("generating aggregate script file: "+path);
+			this.createAggDir();
+			fs.writeFileSync(path, this.getAggregatedScript(types), "UTF-8");
+		},
+
+		generateAggregateStyle: function(name)
+		{
+			var index = this.getIndex();
+			var comps = name.split("_");
+			comps.pop();
+			var typesBitset = new phnq_core.BitSet(comps);
+			var types = [];
+			for(var i=0; i<index.length; i++)
+			{
+				if(typesBitset.isSet(i))
+					types.push(index[i]);
+			}
+			var path = _path.join(_path.dirname(process.argv[1]), "/agg/"+this.getAggregatedStyleName(types)+".css");
+			log.debug("generating aggregate style file: "+path);
+			this.createAggDir();
+			fs.writeFileSync(path, this.getAggregatedStyle(types), "UTF-8");
 		},
 
 		watch: function(path)

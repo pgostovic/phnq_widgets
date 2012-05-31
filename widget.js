@@ -268,6 +268,7 @@ require("phnq_log").exec("widget", function(log)
 		getWidgetShellCode: function(context)
 		{
 			var title = this.type;
+			var widgetManager = require("./widget_manager").instance();
 
 			// Get Markup -- includes dependencies
 			var markupFn = eval(this.getCompiledMarkup());
@@ -282,9 +283,7 @@ require("phnq_log").exec("widget", function(log)
 			types = _.uniq(types);
 			var typesLen = types.length;
 
-			// Aggregate the scripts and styles
-			var scriptBuf = [];
-			var styleBuf = [];
+			// find the external scripts
 			var extScriptBuf = [];
 			for(var i=0; i<typesLen; i++)
 			{
@@ -293,20 +292,12 @@ require("phnq_log").exec("widget", function(log)
 				{
 					extScriptBuf.push("<script type='text/javascript' src='"+type+"'></script>");
 				}
-				else
-				{
-					try
-					{
-						var depWidget = require("./widget_manager").instance().getWidget(type);
-						scriptBuf.push(depWidget.getScript());
-						styleBuf.push(depWidget.getStyle());
-					}
-					catch(ex)
-					{
-						log.error("Error loading dependency: ", type);
-					}
-				}
 			}
+
+			var inlineScript = config.inlineScript ? widgetManager.getAggregatedScript(types) : null;
+			var inlineStyle = config.inlineStyle ? widgetManager.getAggregatedStyle(types) : null;
+			var aggScript = config.inlineScript ? null : widgetManager.getAggregatedScriptName(types);
+			var aggStyle = config.inlineStyle ? null : widgetManager.getAggregatedStyleName(types);
 
 			var shellFn = getCompiledShellMarkupTemplate();
 			var shellCode = shellFn(
@@ -315,8 +306,10 @@ require("phnq_log").exec("widget", function(log)
 				prefix: config.uriPrefix,
 				body: markup,
 				extScript: extScriptBuf.join(""),
-				script: scriptBuf.join(""),
-				style: styleBuf.join(""),
+				inlineScript: inlineScript,
+				inlineStyle: inlineStyle,
+				aggScript: aggScript,
+				aggStyle: aggStyle,
 				widget: this
 			});
 
