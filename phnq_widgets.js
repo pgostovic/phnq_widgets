@@ -113,7 +113,7 @@ require("phnq_log").exec("phnq_widgets", function(log)
 						var markup;
 						if(isLazy)
 						{
-							markup = "<span class=\"wph "+type+"\">"+JSON.stringify(this.params)+"</span>";
+							markup = "<span class=\"wph "+type+"\"><!--"+JSON.stringify(this.params)+"--></span>";
 						}
 						else
 						{

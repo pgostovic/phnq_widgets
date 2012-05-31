@@ -106,7 +106,8 @@ phnq_log.exec("widgets", function(log)
 				var tmpltFn = widgetTmpltFns[type];
 				if(tmpltFn)
 				{
-					var params = JSON.parse($(wphElmnt).text());
+					var paramsMatcher = /<!--(.*)?-->/.exec($(wphElmnt).html());
+					var params = paramsMatcher ? JSON.parse(paramsMatcher[1]) : {};
 					var context =
 					{
 						params: params,
@@ -284,7 +285,7 @@ phnq_log.exec("widgets", function(log)
 
 			wph: function(type, params)
 			{
-				return "<span class=\"wph "+type+"\">"+JSON.stringify(params)+"</span>";
+				return "<span class=\"wph "+type+"\"><!--"+JSON.stringify(params)+"--></span>";
 			}
 		};
 
