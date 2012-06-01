@@ -45,7 +45,7 @@ phnq_log.exec("widgets", function(log)
 					this.get$$()(".winst").each(function()
 					{
 						var widgetObj = $(this).data("widget");
-						if(widgetObj.type == type)
+						if(widgetObj && widgetObj.type == type)
 							found.push(widgetObj);
 					});
 					return found;
