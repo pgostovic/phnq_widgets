@@ -90,7 +90,7 @@ phnq_log.exec("widgets", function(log)
 
 			var _this = this;
 			var added = false;
-			var toLoad = [];
+			var toLoad = {};
 
 			options = options || {};
 
@@ -138,7 +138,7 @@ phnq_log.exec("widgets", function(log)
 					}
 					else
 					{
-						toLoad.push(type);
+						toLoad[type] = true;
 					}
 				}
 			});
@@ -166,11 +166,18 @@ phnq_log.exec("widgets", function(log)
 				}
 			});
 
+			// make an array of types to load...
+			var toLoadArr = [];
+			for(var type in toLoad)
+			{
+				toLoadArr.push(type);
+			}
+
 			// Load any widgets that need loading. If any widgets were added
 			// above, or if any widgets needed loading then re-scan.
-			this.load(toLoad, function()
+			this.load(toLoadArr, function()
 			{
-				if(added || toLoad.length > 0)
+				if(added || toLoadArr.length > 0)
 				{
 					_this.scan(fn, newlyAdded, options);
 				}
