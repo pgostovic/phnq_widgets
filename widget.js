@@ -16,6 +16,7 @@ require("phnq_log").exec("widget", function(log)
 		{
 			this.type = _path.basename(dir);
 			this.dir = dir;
+			this.strings = {};
 			this.partials = {};
 			log.debug("discovered widget: ", this.type);
 		},
@@ -220,6 +221,10 @@ require("phnq_log").exec("widget", function(log)
 						nextId: function()
 						{
 							return "id_"+(idIdx++);
+						},
+						i18n: function(key)
+						{
+							return "";
 						}
 					});
 				}
@@ -327,8 +332,47 @@ require("phnq_log").exec("widget", function(log)
 			});
 
 			return shellCode;
+		},
+
+		getString: function(key, locale)
+		{
+			if(this.strings[locale] === undefined)
+			{
+				var path = _path.join(this.dir, "i18n", locale, "strings.json");
+				if(_path.existsSync(path))
+					this.strings[locale] = JSON.parse(_fs.readFileSync(path, "UTF-8"));
+				else
+					this.strings[locale] = null;
+			}
+
+			if(this.strings[locale] && this.strings[locale][key])
+				return this.strings[locale][key];
+
+			if(locale)
+				return this.getString(key, getParentLocale(locale));
+
+			return null;
+		},
+
+		getStaticFile: function(path, locale)
+		{
+
 		}
 	});
+
+	var getParentLocale = function(locale)
+	{
+		var comps = locale.split(/[_-]/);
+		if(comps.length > 1)
+		{
+			comps.pop();
+			return comps.join("_");
+		}
+		else
+		{
+			return null;
+		}
+	};
 
 	var compiledShellMarkupTemplate = null;
 	var getCompiledShellMarkupTemplate = function()

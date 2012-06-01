@@ -78,6 +78,14 @@ require("phnq_log").exec("phnq_widgets", function(log)
 
 					params: {},
 
+					i18n: function(key)
+					{
+						var locale = "en_US";
+
+						var currentWidget = this.embedded.length == 0 ? widget : widgetManager.getWidget(this.embedded[this.embedded.length-1]);
+						return currentWidget.getString(key, locale) || "[MISSING_STRING("+locale+", "+currentWidget.type+") - "+key+"]";
+					},
+
 					nextId: function()
 					{
 						return config.idPrefix + (nextIdIdx++);
@@ -129,6 +137,7 @@ require("phnq_log").exec("phnq_widgets", function(log)
 							{
 								markup = "";
 							}
+							this.embedded.pop();
 						}
 
 						this.params = {};

@@ -119,6 +119,10 @@ phnq_log.exec("widgets", function(log)
 						nextId: function()
 						{
 							return phnq_widgets.config.idPrefixClient + (nextIdIdx++);
+						},
+						i18n: function(key)
+						{
+							return "[NOT FOUND]";
 						}
 					};
 

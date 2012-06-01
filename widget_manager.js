@@ -272,10 +272,17 @@ require("phnq_log").exec("widget_manager", function(log)
 						{
 							if(stat && stat.isDirectory())
 							{
-								_this.addWidgetsAtPath(f, function()
+								if(name == "i18n" || name == "static")
 								{
 									next();
-								});
+								}
+								else
+								{
+									_this.addWidgetsAtPath(f, function()
+									{
+										next();
+									});
+								}
 							}
 							else
 							{
