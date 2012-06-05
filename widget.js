@@ -21,6 +21,24 @@ require("phnq_log").exec("widget", function(log)
 			log.debug("discovered widget: ", this.type);
 		},
 
+		getRemoteHandlers: function()
+		{
+			if(this.remoteHandlers === undefined)
+			{
+				if(this.remoteHandlerFile && _path.existsSync(this.remoteHandlerFile))
+				{
+					var handlersScript = "(function(){"+_fs.readFileSync(this.remoteHandlerFile, "UTF-8")+" return handler;})";
+					var fn = eval(handlersScript);
+					this.remoteHandlers = fn();
+				}
+				else
+				{
+					this.remoteHandlers = {};
+				}
+			}
+			return this.remoteHandlers;
+		},
+
 		getScript: function()
 		{
 			if(this.script === undefined)
@@ -34,7 +52,8 @@ require("phnq_log").exec("widget", function(log)
 					{
 						type: _this.type,
 						script: rawScript,
-						partialTemplates: JSON.stringify(_this.getCompiledPartials())
+						partialTemplates: JSON.stringify(_this.getCompiledPartials()),
+						remoteMethodNames: JSON.stringify(_.keys(_this.getRemoteHandlers()))
 					}));
 				}
 				else

@@ -266,6 +266,25 @@ require("phnq_log").exec("phnq_widgets", function(log)
 				res.sendfile(_path.join(widget.dir, "static", req.params.staticPath));
 			});
 		});
+
+		app.post(config.uriPrefix+"/:widgetType/remote/:cmd", function(req, res)
+		{
+			widgetManager.getWidget(req.params.widgetType, function(err, widget)
+			{
+				if (err)
+					return res.send(err);
+
+				if(!widget)
+					return res.send(404);
+
+				var args = req.body;
+				args.push(function(resp)
+				{
+					res.json(resp);
+				});
+				widget.getRemoteHandlers()[req.params.cmd].apply(null, args);
+			});
+		});
 	};
 
 	var clientBoot = null;

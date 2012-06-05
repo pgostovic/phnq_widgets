@@ -296,9 +296,14 @@ require("phnq_log").exec("widget_manager", function(log)
 									var type = _path.basename(_path.dirname(f));
 									var widget = _this.widgets[type] || (_this.widgets[type] = new Widget(_path.dirname(f)));
 									var partialMatch = /^_([^.]*).html.ejs/.exec(filename);
+									var handlerMatch = /^_([^.]*).js/.exec(filename);
 									if(partialMatch)
 									{
 										widget.partials[partialMatch[1]] = f;
+									}
+									else if(handlerMatch)
+									{
+										widget.remoteHandlerFile = f;
 									}
 									else
 									{

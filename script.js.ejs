@@ -4,5 +4,6 @@ phnq_log.exec("<%=type%>", function(log)
 
 	var _widget = typeof(widget) == "object" ? widget : {};
 	_widget._partialTemplates = <%=partialTemplates%>;
+	_widget._remoteMethodNames = <%=remoteMethodNames%>;
 	phnq_widgets.create("<%=type%>", _widget);
 });
