@@ -10,18 +10,18 @@
 				<%=inlineStyle%>
 			</style>
 		<% } %>
-		<script type="text/javascript" src="<%=prefix%>/boot"></script>
-		<%=extScript%>
-		<% if(aggScript) { %>
-			<script type="text/javascript" src="<%=prefix%>/agg/<%=aggScript%>.js"></script>
-		<% } %>
-		<% if(inlineScript && inlineScript.match(/\S/)) { %>
-			<script type="text/javascript">
-				<%=inlineScript%>
-			</script>
-		<% } %>
 	</head>
 	<% if(widget.rootTagName != "body") { %><body><% } %>
 		<%=body%>
 	<% if(widget.rootTagName != "body") { %></body><% } %>
+	<script type="text/javascript" src="<%=prefix%>/boot"></script>
+	<%=extScript%>
+	<% if(aggScript) { %>
+		<script type="text/javascript" src="<%=prefix%>/agg/<%=aggScript%>.js"></script>
+	<% } %>
+	<% if(inlineScript && inlineScript.match(/\S/)) { %>
+		<script type="text/javascript">
+			<%=inlineScript%>
+		</script>
+	<% } %>
 </html>
