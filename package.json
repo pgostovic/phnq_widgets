@@ -9,7 +9,7 @@
   "version"       : "1.0.0",
   "dependencies"  :
   {
-   	"phnq_log": "1.0.0",
+   	"phnq_log": "1.0.1",
    	"phnq_core": "1.0.0",
    	"phnq_ejs": "1.0.0",
     "express": "2.5.9",
