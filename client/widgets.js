@@ -70,50 +70,55 @@ phnq_log.exec("widgets", function(log)
 						throw "No partial named '"+name+"' in "+this.type;
 					}
 					return buf.join("");
-				},
-
-				callRemote: function(mName, arguments)
-				{
-					var url = phnq_widgets.config.uriPrefix + "/" + this.type + "/remote/" + mName;
-					var data = [];
-
-					for(var i=0; i<arguments.length; i++)
-					{
-						data.push(arguments[i]);
-					}
-
-					var fn = data.pop();
-					if(typeof(fn) != "function")
-					{
-						data.push(fn);
-						fn = function(){};
-					}
-
-			        $.ajax(
-			        {
-			            url: url,
-			            type: "POST",
-			            data: JSON.stringify(data),
-			            dataType: "json",
-			            contentType: "application/json; charset=utf-8"
-			        }).success(function(resp, status, xhr)
-			        {
-			            fn(resp, xhr);
-			        }).error(function(resp, status, xhr)
-			        {
-			            errorFn(resp, xhr);
-			        });
 				}
 			});
 
-			$(obj._remoteMethodNames).each(function()
+			if(obj._remoteMethodNames.length > 0)
 			{
-				var mName = this;
-				widgetClass.prototype[mName] = function()
+				var ctx = window;
+				$(type.split(".")).each(function()
 				{
-					this.callRemote(mName, arguments);
-				};
-			});
+					ctx[this] = ctx[this] || {};
+					ctx = ctx[this];
+				});
+
+				$(obj._remoteMethodNames).each(function()
+				{
+					var mName = this;
+					ctx[mName] = function()
+					{
+						var url = phnq_widgets.config.uriPrefix + "/" + type + "/remote/" + mName;
+						var data = [];
+
+						for(var i=0; i<arguments.length; i++)
+						{
+							data.push(arguments[i]);
+						}
+
+						var fn = data.pop();
+						if(typeof(fn) != "function")
+						{
+							data.push(fn);
+							fn = function(){};
+						}
+
+				        $.ajax(
+				        {
+				            url: url,
+				            type: "POST",
+				            data: JSON.stringify(data),
+				            dataType: "json",
+				            contentType: "application/json; charset=utf-8"
+				        }).success(function(resp, status, xhr)
+				        {
+				            fn(resp, xhr);
+				        }).error(function(resp, status, xhr)
+				        {
+				            errorFn(resp, xhr);
+				        });
+					};
+				});
+			}
 		},
 
 		scan: function(/* options, fn, newlyAdded */)
