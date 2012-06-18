@@ -357,6 +357,18 @@ phnq_log.exec("widgets", function(log)
 			wph: function(type, params)
 			{
 				return "<span class=\"wph "+type+"\"><!--"+JSON.stringify(params)+"--></span>";
+			},
+
+			boundObject: function()
+			{
+				var objs = [];
+				$(this).each(function()
+				{
+					var wObj = $(this).data("widget");
+					if(wObj)
+						objs.push(wObj);
+				});
+				return objs;
 			}
 		};
 
