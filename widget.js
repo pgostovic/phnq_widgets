@@ -198,54 +198,25 @@ require("phnq_log").exec("widget", function(log)
 			{
 				var deps = [];
 
-				// TODO: this does not completely work -- if any calls to widget() are
-				// nested within some condition then, depending on the condition, the
-				// the widget() function may not get called nor, thus, intercepted. The
-				// result is that embedded widgets may not be recognized as dependencies.
-				// Might need to use regex to extract dependencies in templates.
-
-				/*
-				*	Dependencies from markup
-				*	Run the compiled markup function and intercept the calls to
-				*	widget(type).
-				*/
 				var compiledMarkup = this.getCompiledMarkup();
 				if(compiledMarkup)
 				{
-					var markupFn = eval(compiledMarkup);
-					var idIdx = 0;
-					markupFn(
+					var re = /widget\s*\(\s*"([^"]*)"/g;
+					var m;
+					while(m = re.exec(compiledMarkup))
 					{
-						query: {},
-						params: {},
-						widget: function(type, params)
+						var type = m[1];
+						var depWidget = require("./widget_manager").instance().getWidget(type);
+						if(depWidget)
 						{
-							params = params || {};
-							var isLazy = !!params._lazy;
-
-							if(!isLazy)
+							var nestedDeps = depWidget.getDependencies();
+							for(var i=0; i<nestedDeps.length; i++)
 							{
-								var depWidget = require("./widget_manager").instance().getWidget(type);
-								if(depWidget)
-								{
-									var nestedDeps = depWidget.getDependencies();
-									for(var i=0; i<nestedDeps.length; i++)
-									{
-										deps.push(nestedDeps[i]);
-									}
-									deps.push(type);
-								}
+								deps.push(nestedDeps[i]);
 							}
-						},
-						nextId: function()
-						{
-							return "id_"+(idIdx++);
-						},
-						i18n: function(key)
-						{
-							return "";
+							deps.push(type);
 						}
-					});
+					}
 				}
 
 				var rawScript = this.getFileData("js");
