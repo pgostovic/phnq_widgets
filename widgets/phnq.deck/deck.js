@@ -25,14 +25,44 @@ var widget =
         if(typeof(idx) == "string" && this.keys)
             idx = this.keyLookup[idx];
 
+        var hidden = [];
+        var shown = [];
+
+        var args = [];
+        for(var i=1; i<arguments.length; i++)
+        {
+            args.push(arguments[i]);
+        }
+
         this.get$$()("> .cards > *").each(function(i)
         {
             if(i == idx)
+            {
                 $(this).show();
+                shown.push(this);
+            }
             else
+            {
                 $(this).hide();
+                hidden.push(this);
+            }
         });
 
-        phnq_widgets.scan();
+        phnq_widgets.scan(function()
+        {
+            $(hidden).each(function()
+            {
+                var bos = $(this).widgets("boundObject");
+                if(bos.length == 1 && typeof(bos[0].hide) == "function")
+                    bos[0].hide();
+            });
+
+            $(shown).each(function()
+            {
+                var bos = $(this).widgets("boundObject");
+                if(bos.length == 1 && typeof(bos[0].show) == "function")
+                    bos[0].show.apply(bos[0], args);
+            });
+        });
     }
 };
