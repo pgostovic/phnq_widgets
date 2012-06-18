@@ -4,6 +4,8 @@ var widget =
 
     ready: function($$)
     {
+        $$("> .cards").show();
+
         this.keys = this.params.keys;
 
         if(this.keys)
@@ -30,5 +32,7 @@ var widget =
             else
                 $(this).hide();
         });
+
+        phnq_widgets.scan();
     }
 };
