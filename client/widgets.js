@@ -146,7 +146,7 @@ phnq_log.exec("widgets", function(log)
 
 			// Turn widget placeholders into widgets (markup only), or if no
 			// markup available, add type to a list of types to load.
-			$(".wph").each(function()
+			$(".wph:visible").each(function()
 			{
 				added = true;
 				var wphElmnt = this;
@@ -194,7 +194,7 @@ phnq_log.exec("widgets", function(log)
 			// Widgets that have had their markup inserted, but not yet bound to
 			// a widget object are tagged with the "widget" class. Bind these
 			// elements to corresponding widget instances.
-			$(".widget").each(function()
+			$(".widget:visible").each(function()
 			{
 				added = true;
 				var widgetElmnt = this;
