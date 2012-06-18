@@ -154,6 +154,8 @@ require("phnq_log").exec("widget", function(log)
 							node.attributes["id"] = id;
 						}
 					}
+
+					node.attributes["data-p"] = "<%= me.params ? JSON.stringify(me.params).replace(/\"/g, \"&quot;\") : \"\" %>";
 				}
 
 				buf.push("<"+node.name);

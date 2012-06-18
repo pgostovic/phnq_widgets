@@ -11,6 +11,7 @@ phnq_log.exec("widgets", function(log)
 
 		create: function(type, obj)
 		{
+			obj.order = obj.order || 0;
 			var widgetClass = widgetClasses[type] = phnq_core.clazz(obj || {});
 			phnq_core.extend(widgetClass.prototype,
 			{
@@ -210,6 +211,8 @@ phnq_log.exec("widgets", function(log)
 					widget.elmntId = $(widgetElmnt).attr("id");
 					$(widgetElmnt).data("widget", widget);
 					newlyAdded.push(widget);
+
+					widget.params = JSON.parse($(widgetElmnt).attr("data-p"));
 				}
 			});
 
@@ -232,6 +235,16 @@ phnq_log.exec("widgets", function(log)
 				{
 					if(options.delayLifecycle && fn)
 						fn();
+
+					newlyAdded.sort(function(w1, w2)
+					{
+						if(w1.order < w2.order)
+							return -1;
+						else if(w1.order > w2.order)
+							return 1;
+						else
+							return 0;
+					});
 
 					$(newlyAdded).each(function()
 					{
