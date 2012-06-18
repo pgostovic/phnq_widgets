@@ -25,7 +25,7 @@ var widget =
         if(typeof(idx) == "string" && this.keys)
             idx = this.keyLookup[idx];
 
-        this.get$$()("> *").each(function(i)
+        this.get$$()("> .cards > *").each(function(i)
         {
             if(i == idx)
                 $(this).show();
