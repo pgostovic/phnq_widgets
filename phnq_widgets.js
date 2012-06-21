@@ -156,12 +156,19 @@ require("phnq_log").exec("phnq_widgets", function(log)
 
 	var setRoutes = function()
 	{
+		/*
+		*	Gets the client-side bootstrap JS. This includes jQuery and some
+		*	other JS utilities to allow the loading of widgets.
+		*/
 		app.get(config.uriPrefix+"/boot", function(req, res)
 		{
 			res.contentType("js");
 			res.send(getClientBoot());
 		});
 
+		/*
+		*	Load widgets onto the client.
+		*/
 		app.get(config.uriPrefix+"/load", function(req, res)
 		{
 			var result =
@@ -282,7 +289,31 @@ require("phnq_log").exec("phnq_widgets", function(log)
 				{
 					res.json(resp);
 				});
-				widget.getRemoteHandlers()[req.params.cmd].apply(null, args);
+
+				var remoteHandlerFn = widget.getRemoteHandlers()["post"+req.params.cmd] || widget.getRemoteHandlers()[req.params.cmd];
+				remoteHandlerFn.apply(null, args);
+			});
+		});
+
+		app.get(new RegExp("^"+config.uriPrefix+"/([^/]*)/remote/([^/]*)/(.*)"), function(req, res)
+		{
+			var widgetType = req.params[0];
+			var cmd = req.params[1];
+			var args = req.params[2].split("/");
+
+			widgetManager.getWidget(widgetType, function(err, widget)
+			{
+				if (err)
+					return res.send(err);
+
+				if(!widget)
+					return res.send(404);
+
+				args.push(function(resp)
+				{
+					res.json(resp);
+				});
+				widget.getRemoteHandlers()["get"+cmd].apply(null, args);
 			});
 		});
 	};

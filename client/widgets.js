@@ -88,26 +88,49 @@ phnq_log.exec("widgets", function(log)
 					var mName = this;
 					ctx[mName] = function()
 					{
-						var url = phnq_widgets.config.uriPrefix + "/" + type + "/remote/" + mName;
-						var data = [];
+						var httpMethod = mName.substring(0, 3).toUpperCase();
+						var cmdName = mName.substring(3);
+
+						if(httpMethod != "GET" && httpMethod != "POST")
+						{
+							cmdName = mName;
+							httpMethod = "POST";
+						}
+
+						var url = phnq_widgets.config.uriPrefix + "/" + type + "/remote/" + cmdName;
+						var args = [];
 
 						for(var i=0; i<arguments.length; i++)
 						{
-							data.push(arguments[i]);
+							args.push(arguments[i]);
 						}
 
-						var fn = data.pop();
+						var fn = args.pop();
 						if(typeof(fn) != "function")
 						{
-							data.push(fn);
+							args.push(fn);
 							fn = function(){};
+						}
+
+						var data = {};
+						if(httpMethod == "POST")
+						{
+							data = JSON.stringify(args);
+						}
+						else if(httpMethod == "GET")
+						{
+							for(var i=0; i<args.length; i++)
+							{
+								args[i] = escape(args[i]);
+							}
+							url += ("/" + args.join("/"));
 						}
 
 				        $.ajax(
 				        {
 				            url: url,
-				            type: "POST",
-				            data: JSON.stringify(data),
+				            type: httpMethod,
+				            data: data,
 				            dataType: "json",
 				            contentType: "application/json; charset=utf-8"
 				        }).success(function(resp, status, xhr)
