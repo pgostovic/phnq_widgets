@@ -315,6 +315,7 @@ require("phnq_log").exec("widget", function(log)
 				title: title,
 				prefix: config.uriPrefix,
 				body: markup,
+				jQueryCDN: config.jQueryCDN,
 				extScript: extScriptBuf.join(""),
 				inlineScript: inlineScript,
 				inlineStyle: inlineStyle,

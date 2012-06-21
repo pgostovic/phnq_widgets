@@ -14,6 +14,9 @@
 	<% if(widget.rootTagName != "body") { %><body><% } %>
 		<%=body%>
 	<% if(widget.rootTagName != "body") { %></body><% } %>
+	<% if(jQueryCDN) { %>
+		<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+	<% } %>
 	<script type="text/javascript" src="<%=prefix%>/boot"></script>
 	<%=extScript%>
 	<% if(aggScript) { %>
