@@ -25,7 +25,7 @@ require("phnq_log").exec("widget", function(log)
 		{
 			if(this.remoteHandlers === undefined)
 			{
-				if(this.remoteHandlerFile && _path.existsSync(this.remoteHandlerFile))
+				if(this.remoteHandlerFile && _fs.existsSync(this.remoteHandlerFile))
 				{
 					var handlersScript = "(function(){"+_fs.readFileSync(this.remoteHandlerFile, "UTF-8")+" return handler;})";
 					var fn = eval(handlersScript);
@@ -332,7 +332,7 @@ require("phnq_log").exec("widget", function(log)
 			if(this.strings[locale] === undefined)
 			{
 				var path = _path.join(this.dir, "i18n", locale, "strings.json");
-				if(_path.existsSync(path))
+				if(_fs.existsSync(path))
 					this.strings[locale] = JSON.parse(_fs.readFileSync(path, "UTF-8"));
 				else
 					this.strings[locale] = null;
