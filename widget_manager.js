@@ -155,7 +155,7 @@ require("phnq_log").exec("widget_manager", function(log)
 		createAggDir: function()
 		{
 			var aggDir = _path.join(_path.dirname(process.argv[1]), "/agg/");
-			if(!_path.existsSync(aggDir))
+			if(!_fs.existsSync(aggDir))
 				fs.mkdirSync(aggDir);
 		},
 

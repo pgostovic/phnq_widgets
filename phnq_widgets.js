@@ -234,7 +234,7 @@ require("phnq_log").exec("phnq_widgets", function(log)
 		app.get(config.uriPrefix+"/agg/:aggFile.js", function(req, res)
 		{
 			var path = _path.join(_path.dirname(process.argv[1]), "/agg/"+req.params.aggFile+".js");
-			_path.exists(path, function(exists)
+			_fs.exists(path, function(exists)
 			{
 				if(!exists)
 					widgetManager.generateAggregateScript(req.params.aggFile);
@@ -246,7 +246,7 @@ require("phnq_log").exec("phnq_widgets", function(log)
 		app.get(config.uriPrefix+"/agg/:aggFile.css", function(req, res)
 		{
 			var path = _path.join(_path.dirname(process.argv[1]), "/agg/"+req.params.aggFile+".css");
-			_path.exists(path, function(exists)
+			_fs.exists(path, function(exists)
 			{
 				if(!exists)
 					widgetManager.generateAggregateStyle(req.params.aggFile);
