@@ -7,6 +7,7 @@ require("phnq_log").exec("phnq_widgets", function(log)
 	var _path = require("path");
 	var phnq_core = require("phnq_core");
 	var config = require("./config");
+	var Context = require("./context");
 
 	var phnq_widgets = module.exports =
 	{
@@ -29,6 +30,7 @@ require("phnq_log").exec("phnq_widgets", function(log)
 				app = require("express").createServer();
 				app.listen(options.port);
 			}
+			
 			setRoutes();
 		},
 
@@ -64,88 +66,7 @@ require("phnq_log").exec("phnq_widgets", function(log)
 				if(!widget)
 					return res.send(404);
 
-				/*
-				*	The context object is what is passed into the compiled markup
-				*	template function.  This must be duplicated on the client too
-				*	with alternative, client-specific implementations.
-				*/
-				var nextIdIdx = 0;
-				phnq_core.extend(context,
-				{
-					embedded: [],
-
-					query: req.query,
-
-					params: {},
-
-					i18n: function(key)
-					{
-						var locale = "en_US";
-
-						var currentWidget = this.embedded.length == 0 ? widget : widgetManager.getWidget(this.embedded[this.embedded.length-1]);
-						return currentWidget.getString(key, locale) || "[MISSING_STRING("+locale+", "+currentWidget.type+") - "+key+"]";
-					},
-
-					nextId: function()
-					{
-						return config.idPrefix + (nextIdIdx++);
-					},
-
-					widget: function(type /* , params, bodyFn */)
-					{
-						var params=null, bodyFn=null;
-
-						for(var i=1; i<arguments.length; i++)
-						{
-							if(!params && typeof(arguments[i]) == "object")
-								params = arguments[i];
-							else if(!bodyFn && typeof(arguments[i]) == "function")
-								bodyFn = arguments[i];
-						}
-
-						params = params || {};
-						var isLazy = !!params._lazy;
-
-						if(bodyFn)
-						{
-							if(isLazy)
-								throw "A widget with a body function may not be loaded lazily: "+type;
-
-							var buf = [];
-							bodyFn(buf);
-							this.body = buf.join("");
-						}
-
-						this.params = params;
-
-						var markup;
-						if(isLazy)
-						{
-							markup = "<span class=\"wph "+type+"\"><!--"+JSON.stringify(this.params)+"--></span>";
-						}
-						else
-						{
-							this.embedded.push(type);
-							var widget = widgetManager.getWidget(type);
-							var compiledMarkup = widget.getCompiledMarkup();
-							if(compiledMarkup)
-							{
-								var markupFn = eval(compiledMarkup);
-								markup = markupFn(this);
-							}
-							else
-							{
-								markup = "";
-							}
-							this.embedded.pop();
-						}
-
-						this.params = {};
-						this.body = null;
-
-						return markup;
-					}
-				});
+				phnq_core.extend(context, new Context(widget, req));
 
 				res.send(widget.getWidgetShellCode(context));
 			});
@@ -160,6 +81,7 @@ require("phnq_log").exec("phnq_widgets", function(log)
 		*	Gets the client-side bootstrap JS. This includes jQuery and some
 		*	other JS utilities to allow the loading of widgets.
 		*/
+		// TODO: make this cacheable.
 		app.get(config.uriPrefix+"/boot", function(req, res)
 		{
 			res.contentType("js");
@@ -313,7 +235,12 @@ require("phnq_log").exec("phnq_widgets", function(log)
 				{
 					res.json(resp);
 				});
-				widget.getRemoteHandlers()["get"+cmd].apply(null, args);
+				var remoteHandlerFn = widget.getRemoteHandlers()["get"+cmd];
+
+				if(remoteHandlerFn.maxAge)
+					res.header("Cache-Control", "max-age="+remoteHandlerFn.maxAge+", must-revalidate");
+
+				remoteHandlerFn.apply(null, args);
 			});
 		});
 	};

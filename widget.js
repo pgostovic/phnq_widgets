@@ -10,6 +10,12 @@ require("phnq_log").exec("widget", function(log)
 	var URL_REGEX = /url\("?([^)\"]*)"?\)/g;
 	var EMPTY_TAGS = ["base", "basefont", "br", "col", "frame", "hr", "img", "input", "link", "meta", "param"];
 
+	Function.prototype.maxAge = function(seconds)
+	{
+		this.maxAge = seconds;
+		return this;
+	};
+
 	module.exports = phnq_core.clazz(
 	{
 		init: function(dir)
