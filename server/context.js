@@ -11,14 +11,15 @@ require("phnq_log").exec("context", function(log)
 		init: function(theWidget, req)
 		{
 			this.theWidget = theWidget;
-			this.req = req;
+			this.query = req.query;
+			this.headers = req.headers;
 			this.params = {};
 			this.embedded = [];
 		},
 
 		i18n: function(key)
 		{
-			var locale = this.req.headers["accept-language"] || "en";
+			var locale = this.headers["accept-language"] || "en";
 			var currentWidget = this.embedded.length == 0 ? this.theWidget : widgetManager.getWidget(this.embedded[this.embedded.length-1]);
 			return currentWidget.getString(key, locale) || "[MISSING_STRING("+locale+", "+currentWidget.type+") - "+key+"]";
 		},

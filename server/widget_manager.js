@@ -125,7 +125,7 @@ require("phnq_log").exec("widget_manager", function(log)
 
 			if(format == "style")
 			{
-				buf.push(".wph {display: none;}\n");
+				buf.push(".wph {visibility: hidden;}\n");
 				buf.push(".loadError { padding: 5px; margin: 5px; background: #c00; color: #fff; }\n");
 			}
 
@@ -230,7 +230,7 @@ require("phnq_log").exec("widget_manager", function(log)
 			this.widgets = {};
 
 			var paths = this.scanPaths.slice(0).reverse();
-			paths.push(_path.join(__dirname, "widgets"));
+			paths.push(_path.join(__dirname, "../widgets"));
 
 			var scanNextPath = function()
 			{

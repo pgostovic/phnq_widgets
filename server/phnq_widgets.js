@@ -253,15 +253,15 @@ require("phnq_log").exec("phnq_widgets", function(log)
 
 		var bootFiles =
 		[
-			"client/json2.js",
+			"../client/json2.js",
 			"phnq_core",
 			"phnq_log",
-			"client/widgets.js",
-			"client/context.js"
+			"../client/widgets.js",
+			"../client/context.js"
 		];
 
 		if(!config.jQueryCDN)
-			bootFiles.splice(0, 0, "client/jquery-1.7.2.min.js");
+			bootFiles.splice(0, 0, "../client/jquery-1.7.2.min.js");
 
 		var buf = [];
 		for(var i=0; i<bootFiles.length; i++)

@@ -179,23 +179,7 @@ phnq_log.exec("widgets", function(log)
 				{
 					var paramsMatcher = /<!--(.*)?-->/.exec($(wphElmnt).html());
 					var params = paramsMatcher ? JSON.parse(paramsMatcher[1]) : {};
-					var context =
-					{
-						params: params,
-						query: getQueryParams(),
-						widget: function(type, params)
-						{
-							return $().widgets("wph", type, params);
-						},
-						nextId: function()
-						{
-							return phnq_widgets.config.idPrefixClient + (nextIdIdx++);
-						},
-						i18n: function(key)
-						{
-							return "[NOT FOUND]";
-						}
-					};
+					var context = new phnq_widgets.Context(params);
 
 					var markup = tmpltFn(context);
 
@@ -347,25 +331,6 @@ phnq_log.exec("widgets", function(log)
 	window.depend = function()
 	{
 		// not needed on client...
-	};
-
-	var queryParams = null;
-	var getQueryParams = function()
-	{
-		if(!queryParams)
-		{
-			queryParams = {};
-			if(location.search.match(/^\?/))
-			{
-				$(location.search.substring(1).split("&")).each(function()
-				{
-					var nvp = this.split("=");
-					if(nvp.length == 2)
-						queryParams[nvp[0]] = unescape(nvp[1]);
-				});
-			}
-		}
-		return queryParams;
 	};
 
 	(function($)

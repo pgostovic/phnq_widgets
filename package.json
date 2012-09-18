@@ -5,7 +5,7 @@
   "keywords"      : ["phnq", "widgets", "server", "client", "browser"],
   "author"        : "Patrick Gostovic <pg@phnq.org>",
   "repository"    : {"type": "git", "url": "git://github.com/pgostovic/phnq_widgets.git"},
-  "main"          : "phnq_widgets.js",
+  "main"          : "server/phnq_widgets.js",
   "version"       : "1.0.1",
   "dependencies"  :
   {
