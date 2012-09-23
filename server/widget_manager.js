@@ -12,6 +12,8 @@ require("phnq_log").exec("widget_manager", function(log)
 
 	module.exports =
 	{
+		appRoot: _path.dirname(process.argv[1]),
+
 		instance: function()
 		{
 			return instance || (instance = new WidgetManager());
@@ -35,7 +37,7 @@ require("phnq_log").exec("widget_manager", function(log)
 
 		addScanPath: function(path)
 		{
-			path = _path.resolve(_path.dirname(process.argv[1]), path);
+			path = _path.resolve(exports.appRoot, path);
 			try
 			{
 				fs.statSync(path);
@@ -154,7 +156,7 @@ require("phnq_log").exec("widget_manager", function(log)
 
 		createAggDir: function()
 		{
-			var aggDir = _path.join(_path.dirname(process.argv[1]), "/agg/");
+			var aggDir = _path.join(_path.dirname(exports.appRoot), "/agg/");
 			if(!_path.existsSync(aggDir))
 				fs.mkdirSync(aggDir);
 		},
@@ -171,7 +173,7 @@ require("phnq_log").exec("widget_manager", function(log)
 				if(typesBitset.isSet(i))
 					types.push(index[i]);
 			}
-			var path = _path.join(_path.dirname(process.argv[1]), "/agg/"+this.getAggregatedScriptName(types)+".js");
+			var path = _path.join(_path.dirname(exports.appRoot), "/agg/"+this.getAggregatedScriptName(types)+".js");
 			log.debug("generating aggregate script file: "+path);
 			this.createAggDir();
 			fs.writeFileSync(path, this.getAggregatedScript(types), "UTF-8");
@@ -189,7 +191,7 @@ require("phnq_log").exec("widget_manager", function(log)
 				if(typesBitset.isSet(i))
 					types.push(index[i]);
 			}
-			var path = _path.join(_path.dirname(process.argv[1]), "/agg/"+this.getAggregatedStyleName(types)+".css");
+			var path = _path.join(_path.dirname(exports.appRoot), "/agg/"+this.getAggregatedStyleName(types)+".css");
 			log.debug("generating aggregate style file: "+path);
 			this.createAggDir();
 			fs.writeFileSync(path, this.getAggregatedStyle(types), "UTF-8");

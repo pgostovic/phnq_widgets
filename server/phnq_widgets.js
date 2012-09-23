@@ -2,7 +2,8 @@ require("phnq_log").exec("phnq_widgets", function(log)
 {
 	var _ = require("underscore");
 	var app = null;
-	var widgetManager = require("./widget_manager").instance();
+	var appRoot = null;
+	var widgetManager = null;
 	var _fs = require("fs");
 	var _path = require("path");
 	var phnq_core = require("phnq_core");
@@ -30,6 +31,10 @@ require("phnq_log").exec("phnq_widgets", function(log)
 				app = require("express").createServer();
 				app.listen(options.port);
 			}
+
+			appRoot = options.appRoot || _path.dirname(process.argv[1]);
+			require("./widget_manager").appRoot = appRoot;
+			widgetManager = require("./widget_manager").instance();
 
 			setRoutes();
 		},
@@ -77,6 +82,24 @@ require("phnq_log").exec("phnq_widgets", function(log)
 
 	var setRoutes = function()
 	{
+		/*
+		*	Implicit addition of controllers.  Looks for a folder named "controllers"
+		*	in the app folder and calls init() on required js files.
+		*/
+		var controllersPath = _path.join(appRoot, "controllers");
+		_fs.readdir(controllersPath, function(err, names)
+		{
+			_.each(names, function(name)
+			{
+				if(name.match(/^[^\.].*\.js$/))
+				{
+					var controller = require(_path.join(controllersPath, name));
+					if(typeof(controller.init) == "function")
+						controller.init(app);
+				}
+			})
+		});
+
 		/*
 		*	Gets the client-side bootstrap JS. This includes jQuery and some
 		*	other JS utilities to allow the loading of widgets.
@@ -155,7 +178,7 @@ require("phnq_log").exec("phnq_widgets", function(log)
 
 		app.get(config.uriPrefix+"/agg/:aggFile.js", function(req, res)
 		{
-			var path = _path.join(_path.dirname(process.argv[1]), "/agg/"+req.params.aggFile+".js");
+			var path = _path.join(appRoot, "/agg/"+req.params.aggFile+".js");
 			_path.exists(path, function(exists)
 			{
 				if(!exists)
@@ -167,7 +190,7 @@ require("phnq_log").exec("phnq_widgets", function(log)
 
 		app.get(config.uriPrefix+"/agg/:aggFile.css", function(req, res)
 		{
-			var path = _path.join(_path.dirname(process.argv[1]), "/agg/"+req.params.aggFile+".css");
+			var path = _path.join(appRoot, "/agg/"+req.params.aggFile+".css");
 			_path.exists(path, function(exists)
 			{
 				if(!exists)
