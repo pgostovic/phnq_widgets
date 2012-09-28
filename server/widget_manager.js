@@ -289,8 +289,7 @@ require("phnq_log").exec("widget_manager", function(log)
 							else
 							{
 								_this.watch(f);
-
-								var m = /[^\.]*\.(ejs|js|css)/.exec(name);
+								var m = /[^\.]*\.(ejs|js|css)/.exec(name.replace(/\.html$/, ".html.ejs"));
 								if(m)
 								{
 									var filename = _path.basename(f);
