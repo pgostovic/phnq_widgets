@@ -37,6 +37,8 @@ require("phnq_log").exec("phnq_widgets", function(log)
 			widgetManager = require("./widget_manager").instance();
 
 			setRoutes();
+
+			widgetManager.clearAggDir();
 		},
 
 		getApp: function()
