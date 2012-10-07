@@ -63,7 +63,15 @@ phnq_log.exec("widgets", function(log)
 						var dataLen = data.length;
 						for(var i=0; i<dataLen; i++)
 						{
-							buf.push(partialFn(data[i]));
+							try
+							{
+								var ctx = phnq_core.extend(new phnq_widgets.Context({}), data[i]);
+								buf.push(partialFn(ctx));
+							}
+							catch(ex)
+							{
+								log.error("Error rendering partial '"+name+"' for data ", data[i], " -- ", ex.message, ex);
+							}
 						}
 					}
 					else
