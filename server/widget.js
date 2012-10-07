@@ -197,6 +197,8 @@ require("phnq_log").exec("widget", function(log)
 
 			ejs = buf.join("");
 
+			// log.debug("\n=======================================\n"+ejs+"\n=======================================");
+
 			return phnq_ejs.compile(ejs);
 		},
 
@@ -272,11 +274,27 @@ require("phnq_log").exec("widget", function(log)
 
 		absolutizePathIfNeeded: function(tagUri, tagName, attrName, attrValue)
 		{
+			var absBase = config.uriPrefix + "/" + this.type + "/";
 			switch(tagUri + ":" + tagName+":"+attrName)
 			{
 				case ":img:src":
-					return config.uriPrefix + "/" + this.type + "/" + attrValue;
+				{
+					var m;
+					if(m = attrValue.match(/^<%=([^%]*)%>(.*)/))
+					{
+						return "<%=fixUrl(\""+this.type+"\", "+m[1]+")%>"+m[2];
+					}
+					else if(m = attrValue.match(/^([^<]*)(<?.*)/))
+					{
+						return "<%=fixUrl(\""+this.type+"\", \""+m[1]+"\")%>"+m[2];
+					}
+					else
+					{
+						// I don't think this should ever happen...
+						return attrValue;
+					}
 					break;
+				}
 			}
 			return attrValue;
 		},

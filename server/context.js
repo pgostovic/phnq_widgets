@@ -29,6 +29,15 @@ require("phnq_log").exec("context", function(log)
 			return config.idPrefix + (nextIdIdx++);
 		},
 
+		fixUrl: function(type, url)
+		{
+			// If url starts with http/https or /, then return as is...
+			if(url.match(/^(https?:\/\/|\/)/))
+				return url;
+			else
+				return config.uriPrefix + "/" + type + "/" + url;
+		},
+
 		widget: function(type /* , params, bodyFn */)
 		{
 			var params=null, bodyFn=null;

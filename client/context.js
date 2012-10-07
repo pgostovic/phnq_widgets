@@ -24,6 +24,15 @@ phnq_log.exec("context", function(log)
 		{
 			var locale = navigator.language;
 			return "[NOT FOUND]";
+		},
+
+		fixUrl: function(type, url)
+		{
+			// If url starts with http/https or /, then return as is...
+			if(url.match(/^(https?:\/\/|\/)/))
+				return url;
+			else
+				return phnq_widgets.config.uriPrefix + "/" + type + "/" + url;
 		}
 	});
 	
