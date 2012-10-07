@@ -301,14 +301,16 @@ require("phnq_log").exec("widget_manager", function(log)
 							else
 							{
 								_this.watch(f);
+
 								var m = /[^\.]*\.(ejs|js|css)/.exec(name.replace(/\.html$/, ".html.ejs"));
 								if(m)
 								{
 									var filename = _path.basename(f);
+
 									var ext = m[1];
 									var type = _path.basename(_path.dirname(f));
 									var widget = _this.widgets[type] || (_this.widgets[type] = new Widget(_path.dirname(f)));
-									var partialMatch = /^_([^.]*).html.ejs/.exec(filename);
+									var partialMatch = /^_([^.]*).html(.ejs)?/.exec(filename);
 									var handlerMatch = /^_([^.]*).js/.exec(filename);
 									if(partialMatch)
 									{
