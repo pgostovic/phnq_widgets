@@ -122,7 +122,7 @@ require("phnq_log").exec("widget", function(log)
 				for(var k in this.partials)
 				{
 					var ejs = _fs.readFileSync(this.partials[k], "UTF-8");
-					this.compiledPartials[k] = this.compileTemplate(ejs);
+					this.compiledPartials[k] = this.compileTemplate(ejs, null, [k]);
 				}
 			}
 			return this.compiledPartials;
