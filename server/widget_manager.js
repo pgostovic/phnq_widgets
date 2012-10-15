@@ -32,6 +32,7 @@ require("phnq_log").exec("widget_manager", function(log)
 
 		getIndex: function()
 		{
+			// TODO: may want to cache this somehow.
 			return _.keys(this.widgets).sort();
 		},
 

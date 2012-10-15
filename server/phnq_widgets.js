@@ -207,9 +207,11 @@ require("phnq_log").exec("phnq_widgets", function(log)
 			phnq_widgets.renderWidget(req.params.widgetType, {}, req, res);
 		});
 
-		app.get(config.uriPrefix+"/:widgetType/static/:staticPath", function(req, res)
+		app.get(new RegExp(config.uriPrefix+"/([^/]*)/static/(.*)"), function(req, res)
 		{
-			widgetManager.getWidget(req.params.widgetType, function(err, widget)
+			var widgetType = req.params[0];
+			var staticPath = req.params[1];
+			widgetManager.getWidget(widgetType, function(err, widget)
 			{
 				if (err)
 					return res.send(err);
@@ -217,7 +219,7 @@ require("phnq_log").exec("phnq_widgets", function(log)
 				if(!widget)
 					return res.send(404);
 
-				res.sendfile(_path.join(widget.dir, "static", req.params.staticPath));
+				res.sendfile(_path.join(widget.dir, "static", staticPath));
 			});
 		});
 
