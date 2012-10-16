@@ -66,7 +66,7 @@ phnq_log.exec("widgets", function(log)
 							try
 							{
 								var ctx = phnq_core.extend(new phnq_widgets.Context({}), data[i]);
-								buf.push(partialFn(ctx));
+								buf.push(partialFn.call(ctx, ctx));
 							}
 							catch(ex)
 							{
