@@ -43,7 +43,7 @@ var req = function(method, url, data, fn, errorFn)
             type: method,
             data: method == "POST" ? JSON.stringify(data) : data,
             dataType: "json",
-            contentType: "application/json; charset=utf-8"
+            contentType: method == "POST" ? "application/json; charset=utf-8" : undefined
         }).success(function(resp, status, xhr)
         {
             fn(resp, xhr.status);
