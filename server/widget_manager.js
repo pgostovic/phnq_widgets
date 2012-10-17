@@ -158,7 +158,7 @@ require("phnq_log").exec("widget_manager", function(log)
 		clearAggDir: function()
 		{
 			var aggDir = _path.join(_path.dirname(exports.appRoot), "/agg/");
-			if(_path.existsSync(aggDir))
+			if(fs.existsSync(aggDir))
 			{
 				var names = fs.readdirSync(aggDir);
 				_.each(names, function(name)
@@ -173,7 +173,7 @@ require("phnq_log").exec("widget_manager", function(log)
 		createAggDir: function()
 		{
 			var aggDir = _path.join(_path.dirname(exports.appRoot), "/agg/");
-			if(!_path.existsSync(aggDir))
+			if(!fs.existsSync(aggDir))
 				fs.mkdirSync(aggDir);
 		},
 
