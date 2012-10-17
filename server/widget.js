@@ -161,7 +161,7 @@ require("phnq_log").exec("widget", function(log)
 						}
 					}
 
-					node.attributes["data-p"] = "<%= me.params ? JSON.stringify(me.params).replace(/\"/g, \"&quot;\") : \"\" %>";
+					node.attributes["data-p"] = "<%= _locals.params ? JSON.stringify(_locals.params).replace(/\"/g, \"&quot;\") : \"\" %>";
 				}
 
 				buf.push("<"+node.name);
