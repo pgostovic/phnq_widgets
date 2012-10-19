@@ -274,21 +274,22 @@ require("phnq_log").exec("widget", function(log)
 
 		absolutizePathIfNeeded: function(tagUri, tagName, attrName, attrValue)
 		{
+			var LEADING_EJS = /^<%=([^%]*)%>(.*)/;
+			var LEADING_EXP = /^\$\{([^%]*)\}(.*)/;
+			var TRAILING_EJS = /^([^<]*)(<?.*)/;
+			var TRAILING_EXP = /^([^\$]*)(\$?.*)/;
+
 			var absBase = config.uriPrefix + "/" + this.type + "/";
 			switch(tagUri + ":" + tagName+":"+attrName)
 			{
 				case ":img:src":
 				{
 					var m;
-					if(m = attrValue.match(/^<%=([^%]*)%>(.*)/))
+					if(m = attrValue.match(LEADING_EJS) || attrValue.match(LEADING_EXP))
 					{
 						return "<%=fixUrl(\""+this.type+"\", "+m[1]+")%>"+m[2];
 					}
-					else if(m = attrValue.match(/^\$\{([^%]*)\}(.*)/))
-					{
-						return "<%=fixUrl(\""+this.type+"\", "+m[1]+")%>"+m[2];
-					}
-					else if(m = attrValue.match(/^([^<]*)(<?.*)/))
+					else if(m = attrValue.match(TRAILING_EJS) || attrValue.match(TRAILING_EXP))
 					{
 						return "<%=fixUrl(\""+this.type+"\", \""+m[1]+"\")%>"+m[2];
 					}
