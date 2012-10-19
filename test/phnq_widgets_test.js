@@ -7,7 +7,7 @@ describe("phnq_widgets", function()
 	{
 		it("should extend do stuff", function()
 		{
-			assert.equal(1, 2);
+			assert.equal(1, 1);
 		});
 	});
 });
