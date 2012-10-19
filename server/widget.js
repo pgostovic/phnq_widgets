@@ -276,8 +276,8 @@ require("phnq_log").exec("widget", function(log)
 		{
 			var LEADING_EJS = /^<%=([^%]*)%>(.*)/;
 			var LEADING_EXP = /^\$\{([^%]*)\}(.*)/;
-			var TRAILING_EJS = /^([^<]*)(<?.*)/;
-			var TRAILING_EXP = /^([^\$]*)(\$?.*)/;
+			var TRAILING_EJS = /^([^<]*)(<%=.*)/;
+			var TRAILING_EXP = /^([^\$]*)(\$\{.*)/;
 
 			var absBase = config.uriPrefix + "/" + this.type + "/";
 			switch(tagUri + ":" + tagName+":"+attrName)
@@ -293,10 +293,13 @@ require("phnq_log").exec("widget", function(log)
 					{
 						return "<%=fixUrl(\""+this.type+"\", \""+m[1]+"\")%>"+m[2];
 					}
+					else if(attrValue.match(/^\/.*/))
+					{
+						return attrValue;
+					}
 					else
 					{
-						// I don't think this should ever happen...
-						return attrValue;
+						return "<%=fixUrl(\""+this.type+"\", \""+attrValue+"\")%>";
 					}
 					break;
 				}
