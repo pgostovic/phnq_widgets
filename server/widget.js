@@ -284,6 +284,10 @@ require("phnq_log").exec("widget", function(log)
 					{
 						return "<%=fixUrl(\""+this.type+"\", "+m[1]+")%>"+m[2];
 					}
+					else if(m = attrValue.match(/^\$\{([^%]*)\}(.*)/))
+					{
+						return "<%=fixUrl(\""+this.type+"\", "+m[1]+")%>"+m[2];
+					}
 					else if(m = attrValue.match(/^([^<]*)(<?.*)/))
 					{
 						return "<%=fixUrl(\""+this.type+"\", \""+m[1]+"\")%>"+m[2];
