@@ -6,7 +6,7 @@
   "author"        : "Patrick Gostovic <pg@phnq.org>",
   "repository"    : {"type": "git", "url": "git://github.com/pgostovic/phnq_widgets.git"},
   "main"          : "server/phnq_widgets.js",
-  "version"       : "1.0.1",
+  "version"       : "1.0.2",
   "dependencies"  :
   {
    	"phnq_log": "1.0.x",
@@ -15,6 +15,8 @@
     "sax": "0.4.0",
     "underscore": "1.3.3",
     "uglify-js": "1.2.6",
+    "express": "3.x",
+    "zombie": "1.4.1",
     "mocha": "1.6.0"
    },
   "scripts"       :

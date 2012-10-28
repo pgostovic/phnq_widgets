@@ -38,7 +38,7 @@ require("phnq_log").exec("widget_manager", function(log)
 
 		addScanPath: function(path)
 		{
-			path = _path.resolve(exports.appRoot, path);
+			path = _path.join(module.exports.appRoot, path);
 			try
 			{
 				fs.statSync(path);
@@ -157,7 +157,7 @@ require("phnq_log").exec("widget_manager", function(log)
 
 		clearAggDir: function()
 		{
-			var aggDir = _path.join(_path.dirname(exports.appRoot), "/agg/");
+			var aggDir = _path.join(module.exports.appRoot, "/agg/");
 			if(fs.existsSync(aggDir))
 			{
 				var names = fs.readdirSync(aggDir);
@@ -172,9 +172,13 @@ require("phnq_log").exec("widget_manager", function(log)
 
 		createAggDir: function()
 		{
-			var aggDir = _path.join(_path.dirname(exports.appRoot), "/agg/");
+			var aggDir = _path.join(module.exports.appRoot, "/agg/");
+
 			if(!fs.existsSync(aggDir))
+			{
+				log.debug("Creating agg dir: ", aggDir);
 				fs.mkdirSync(aggDir);
+			}
 		},
 
 		generateAggregateScript: function(name)
@@ -189,7 +193,7 @@ require("phnq_log").exec("widget_manager", function(log)
 				if(typesBitset.isSet(i))
 					types.push(index[i]);
 			}
-			var path = _path.join(_path.dirname(exports.appRoot), "/agg/"+this.getAggregatedScriptName(types)+".js");
+			var path = _path.join(module.exports.appRoot, "/agg/"+this.getAggregatedScriptName(types)+".js");
 			log.debug("generating aggregate script file: "+path);
 			this.createAggDir();
 			fs.writeFileSync(path, this.getAggregatedScript(types), "UTF-8");
@@ -207,7 +211,7 @@ require("phnq_log").exec("widget_manager", function(log)
 				if(typesBitset.isSet(i))
 					types.push(index[i]);
 			}
-			var path = _path.join(_path.dirname(exports.appRoot), "/agg/"+this.getAggregatedStyleName(types)+".css");
+			var path = _path.join((module.exports.appRoot), "/agg/"+this.getAggregatedStyleName(types)+".css");
 			log.debug("generating aggregate style file: "+path);
 			this.createAggDir();
 			fs.writeFileSync(path, this.getAggregatedStyle(types), "UTF-8");

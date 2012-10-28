@@ -19,6 +19,8 @@ require("phnq_log").exec("phnq_widgets", function(log)
 
 		start: function(options)
 		{
+			log.info("starting phnq_widgets server");
+
 			options = options || {};
 			options.port = options.port || 8888;
 
@@ -28,8 +30,9 @@ require("phnq_log").exec("phnq_widgets", function(log)
 			}
 			else
 			{
-				app = require("express").createServer();
+				app = require("express")();
 				app.listen(options.port);
+				app.use(phnq_widgets.widgetRenderer());
 			}
 
 			appRoot = options.appRoot || _path.dirname(process.argv[1]);
