@@ -8,7 +8,6 @@ describe("phnq_widgets", function()
 {
 	before(function()
 	{
-		phnq_log.setLevel("debug");
 		phnq_widgets.start({port:7777, appRoot:__dirname});
 	});
 
