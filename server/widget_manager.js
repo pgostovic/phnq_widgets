@@ -128,7 +128,7 @@ require("phnq_log").exec("widget_manager", function(log)
 
 			if(format == "style")
 			{
-				buf.push(".wph {visibility: hidden;}\n");
+				buf.push(".wph {visibility: hidden; width: 1px}\n");
 				buf.push(".loadError { padding: 5px; margin: 5px; background: #c00; color: #fff; }\n");
 			}
 
