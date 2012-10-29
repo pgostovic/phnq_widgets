@@ -177,7 +177,7 @@ phnq_log.exec("widgets", function(log)
 
 			// Turn widget placeholders into widgets (markup only), or if no
 			// markup available, add type to a list of types to load.
-			$(".wph:visible").each(function()
+			$(options.wphSelector || ".wph:visible").each(function()
 			{
 				added = true;
 				var wphElmnt = this;
