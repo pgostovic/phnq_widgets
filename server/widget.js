@@ -7,7 +7,7 @@ require("phnq_log").exec("widget", function(log)
 	var config = require("./config");
 	var _ = require("underscore");
 
-	var URL_REGEX = /url\("?([^)\"]*)"?\)/g;
+	var URL_REGEX = /url\(["']?([^)\"']*)["']?\)/g;
 	var EMPTY_TAGS = ["base", "basefont", "br", "col", "frame", "hr", "img", "input", "link", "meta", "param"];
 
 	Function.prototype.maxAge = function(seconds)
