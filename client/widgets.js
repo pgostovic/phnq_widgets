@@ -191,6 +191,13 @@ phnq_log.exec("widgets", function(log)
 
 					var markup = tmpltFn(context);
 
+					// Extract the id from the markup, and bind it to the wph.
+					// This makes it possible to find the resulting widget
+					// given only the wph.
+					var m = /^\<\w+\s+.*\s+id="(\w+)"[\s>]/.exec(markup);
+					if(m)
+						$(wphElmnt).data("widgetId", m[1]);
+
                     $(wphElmnt).replaceWith(markup);
 				}
 				else
@@ -362,7 +369,16 @@ phnq_log.exec("widgets", function(log)
 				{
 					var wObj = $(this).data("widget");
 					if(wObj)
+					{
 						objs.push(wObj);
+					}
+					else // if this is a wph, might be able to get the widget still
+					{
+						var wid = $(this).data("widgetId");
+						wObj = $(wid).first().data("widget");
+						if(wObj)
+							objs.push(wObj);
+					}
 				});
 				return objs;
 			}
