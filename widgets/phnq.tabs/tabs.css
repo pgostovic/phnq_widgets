@@ -1,0 +1,10 @@
+.__CLASS__ .tabs
+{
+	border-bottom: solid 1px #ccc;
+}
+
+.__CLASS__ .tabs > label
+{
+	padding: 5px;
+	background: #ccc;
+}

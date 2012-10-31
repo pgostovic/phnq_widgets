@@ -1,0 +1,11 @@
+<div>
+	<div class="tabs">
+		{for var i=0; i&lt;params.labels.length; i++}
+			<label>${params.labels[i]}</label>
+		{/for}
+	</div>
+
+	{widget "phnq.deck"}
+		${body}
+	{/widget}
+</div>
