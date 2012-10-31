@@ -196,7 +196,7 @@ phnq_log.exec("widgets", function(log)
 					// given only the wph.
 					var m = /^\<\w+\s+.*\s+id="(\w+)"[\s>]/.exec(markup);
 					if(m)
-						$(wphElmnt).data("widgetId", m[1]);
+						$(wphElmnt).attr("data-wid", m[1]);
 
                     $(wphElmnt).replaceWith(markup);
 				}
@@ -374,8 +374,8 @@ phnq_log.exec("widgets", function(log)
 					}
 					else // if this is a wph, might be able to get the widget still
 					{
-						var wid = $(this).data("widgetId");
-						wObj = $(wid).first().data("widget");
+						var wid = $(this).attr("data-wid");
+						wObj = $("#"+wid).first().data("widget");
 						if(wObj)
 							objs.push(wObj);
 					}
