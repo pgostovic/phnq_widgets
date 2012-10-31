@@ -34,12 +34,15 @@ var widget =
             args.push(arguments[i]);
         }
 
+        var foundCard = false;
+
         this.get$$()("> .cards > *").each(function(i)
         {
             if(i == idx)
             {
                 $(this).show();
                 shown.push(this);
+                foundCard = true;
             }
             else
             {
@@ -64,5 +67,7 @@ var widget =
                     bos[0].show.apply(bos[0], args);
             });
         });
+
+        return foundCard;
     }
 };
