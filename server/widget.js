@@ -313,8 +313,17 @@ require("phnq_log").exec("widget", function(log)
 			var widgetManager = require("./widget_manager").instance();
 
 			// Get Markup -- includes dependencies
-			var markupFn = eval(this.getCompiledMarkup());
-			var markup = markupFn(context);
+			var markupObjCode = this.getCompiledMarkup();
+			var markup;
+			if(markupObjCode)
+			{
+				var markupFn = eval(markupObjCode);
+				markup = markupFn(context);
+			}
+			else
+			{
+				markup = "<h1 style=\"font-family:sans-serif\">no markup: "+this.type+"</h1>";
+			}
 
 			var types = this.getDependencies();
 			types.push(this.type);
