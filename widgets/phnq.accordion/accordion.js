@@ -29,8 +29,6 @@
 
 	var accordianExpand = function(elmnt)
 	{
-		log.debug("accordianExpand: ", elmnt);
-
 		$(elmnt).addClass("selected");
 		$(elmnt).next().slideDown(animTime);
 
