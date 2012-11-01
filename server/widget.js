@@ -24,6 +24,7 @@ require("phnq_log").exec("widget", function(log)
 			this.dir = dir;
 			this.strings = {};
 			this.partials = {};
+			this.tests = {};
 			log.debug("discovered widget: ", this.type);
 		},
 

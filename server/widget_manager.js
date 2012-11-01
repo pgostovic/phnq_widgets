@@ -253,6 +253,7 @@ require("phnq_log").exec("widget_manager", function(log)
 
 			var paths = this.scanPaths.slice(0).reverse();
 			paths.push(_path.join(__dirname, "../widgets"));
+			paths = _.uniq(paths); // in case we're running app.js in this package
 
 			var scanNextPath = function()
 			{
@@ -290,6 +291,7 @@ require("phnq_log").exec("widget_manager", function(log)
 					{
 						var name = names.pop();
 						var f = _path.join(path, name);
+
 						fs.stat(f, function(err, stat)
 						{
 							if(stat && stat.isDirectory())
@@ -318,8 +320,9 @@ require("phnq_log").exec("widget_manager", function(log)
 									var ext = m[1];
 									var type = _path.basename(_path.dirname(f));
 									var widget = _this.widgets[type] || (_this.widgets[type] = new Widget(_path.dirname(f)));
-									var partialMatch = /^_([^.]*).html(.ejs)?/.exec(filename);
-									var handlerMatch = /^_([^.]*).js/.exec(filename);
+									var partialMatch = /^_([^.]*).html(\.ejs)?/.exec(filename);
+									var handlerMatch = /^_([^.]*)\.js/.exec(filename);
+									var testMatch = /^([^.]*)\.test\.js/.exec(filename);
 									if(partialMatch)
 									{
 										widget.partials[partialMatch[1]] = f;
@@ -327,6 +330,10 @@ require("phnq_log").exec("widget_manager", function(log)
 									else if(handlerMatch)
 									{
 										widget.remoteHandlerFile = f;
+									}
+									else if(testMatch)
+									{
+										widget.tests[testMatch[1]] = f;
 									}
 									else
 									{
