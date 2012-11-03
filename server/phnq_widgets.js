@@ -82,6 +82,11 @@ require("phnq_log").exec("phnq_widgets", function(log)
 			});
 		},
 
+		getTestCode: function()
+		{
+			return widgetManager.getTestCode();
+		},
+
 		config: config
 	};
 

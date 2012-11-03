@@ -230,6 +230,17 @@ require("phnq_log").exec("widget_manager", function(log)
 			}
 		},
 
+		getTestCode: function()
+		{
+			var buf = [];
+			this.scan();
+			_.each(this.widgets, function(widget)
+			{
+				buf.push(widget.getTestCode());
+			});
+			return buf.join("");
+		},
+
 		scan: function(fn)
 		{
 			if(this.widgets)

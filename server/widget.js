@@ -389,9 +389,19 @@ require("phnq_log").exec("widget", function(log)
 			return null;
 		},
 
-		getStaticFile: function(path, locale)
+		getTestCode: function()
 		{
+			var buf = [];
+			_.each(this.tests, function(testFile, name)
+			{
+				// TODO -- add more stuff...
 
+				buf.push("(function(){");
+				var code = _fs.readFileSync(testFile, "UTF-8");
+				buf.push(code);
+				buf.push("})();");
+			});
+			return buf.join("");
 		}
 	});
 
