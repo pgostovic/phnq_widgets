@@ -63,23 +63,13 @@ require("phnq_log").exec("phnq_widgets", function(log)
 
 		renderWidget: function(type, context, req, res, next)
 		{
-			widgetManager.getWidget(type, function(err, widget)
-			{
-				if(err)
-				{
-					if(next)
-						return next(err);
-					else
-						return res.send(500, err);
-				}
+			var widget = widgetManager.getWidget(type);
+			if(!widget)
+				return res.send(404);
 
-				if(!widget)
-					return res.send(404);
+			phnq_core.extend(context, new Context(widget, req));
 
-				phnq_core.extend(context, new Context(widget, req));
-
-				res.send(widget.getWidgetShellCode(context));
-			});
+			res.send(widget.getWidgetShellCode(context));
 		},
 
 		getTestCode: function()
@@ -219,37 +209,28 @@ require("phnq_log").exec("phnq_widgets", function(log)
 		{
 			var widgetType = req.params[0];
 			var staticPath = req.params[1];
-			widgetManager.getWidget(widgetType, function(err, widget)
-			{
-				if (err)
-					return res.send(err);
 
-				if(!widget)
-					return res.send(404);
+			var widget = widgetManager.getWidget(widgetType);
+			if(!widget)
+				return res.send(404);
 
-				res.sendfile(_path.join(widget.dir, "static", staticPath));
-			});
+			res.sendfile(_path.join(widget.dir, "static", staticPath));
 		});
 
 		app.post(config.uriPrefix+"/:widgetType/remote/:cmd", function(req, res)
 		{
-			widgetManager.getWidget(req.params.widgetType, function(err, widget)
+			var widget = widgetManager.getWidget(req.params.widgetType);
+			if(!widget)
+				return res.send(404);
+
+			var args = req.body;
+			args.push(function(resp)
 			{
-				if (err)
-					return res.send(err);
-
-				if(!widget)
-					return res.send(404);
-
-				var args = req.body;
-				args.push(function(resp)
-				{
-					res.json(resp);
-				});
-
-				var remoteHandlerFn = widget.getRemoteHandlers()["post"+req.params.cmd] || widget.getRemoteHandlers()[req.params.cmd];
-				remoteHandlerFn.apply(null, args);
+				res.json(resp);
 			});
+
+			var remoteHandlerFn = widget.getRemoteHandlers()["post"+req.params.cmd] || widget.getRemoteHandlers()[req.params.cmd];
+			remoteHandlerFn.apply(null, args);
 		});
 
 		app.get(new RegExp("^"+config.uriPrefix+"/([^/]*)/remote/([^/]*)/(.*)"), function(req, res)
@@ -258,25 +239,20 @@ require("phnq_log").exec("phnq_widgets", function(log)
 			var cmd = req.params[1];
 			var args = req.params[2].split("/");
 
-			widgetManager.getWidget(widgetType, function(err, widget)
+			var widget = widgetManager.getWidget(widgetType);
+			if(!widget)
+				return res.send(404);
+
+			args.push(function(resp)
 			{
-				if (err)
-					return res.send(err);
-
-				if(!widget)
-					return res.send(404);
-
-				args.push(function(resp)
-				{
-					res.json(resp);
-				});
-				var remoteHandlerFn = widget.getRemoteHandlers()["get"+cmd];
-
-				if(remoteHandlerFn.maxAge)
-					res.header("Cache-Control", "max-age="+remoteHandlerFn.maxAge+", must-revalidate");
-
-				remoteHandlerFn.apply(null, args);
+				res.json(resp);
 			});
+			var remoteHandlerFn = widget.getRemoteHandlers()["get"+cmd];
+
+			if(remoteHandlerFn.maxAge)
+				res.header("Cache-Control", "max-age="+remoteHandlerFn.maxAge+", must-revalidate");
+
+			remoteHandlerFn.apply(null, args);
 		});
 	};
 

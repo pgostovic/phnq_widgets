@@ -56,20 +56,10 @@ require("phnq_log").exec("widget_manager", function(log)
 		*	specified, otherwise it returns the widget synchronously, but
 		*	forgoes the scan.
 		*/
-		getWidget: function(type, fn)
+		getWidget: function(type)
 		{
-			if(fn)
-			{
-				var _this = this;
-				this.scan(function()
-				{
-					fn(null, _this.widgets[type]);
-				});
-			}
-			else
-			{
-				return this.widgets[type];
-			}
+			this.scan();
+			return this.widgets[type];
 		},
 
 		getAggregatedScriptName: function(types)
@@ -241,10 +231,10 @@ require("phnq_log").exec("widget_manager", function(log)
 			return buf.join("");
 		},
 
-		scan: function(fn)
+		scan: function()
 		{
 			if(this.widgets)
-				return fn();
+				return;
 
 			var nowMillis = new Date().getTime();
 
@@ -266,101 +256,65 @@ require("phnq_log").exec("widget_manager", function(log)
 			paths.push(_path.join(__dirname, "../widgets"));
 			paths = _.uniq(paths); // in case we're running app.js in this package
 
-			var scanNextPath = function()
+			_.each(_.uniq(paths), function(path)
 			{
-				if(paths.length == 0)
-				{
-					fn();
-				}
-				else
-				{
-					var path = paths.pop();
-					_this.addWidgetsAtPath(path, function()
-					{
-						scanNextPath();
-					});
-				}
-			};
-			scanNextPath();
+				_this.addWidgetsAtPath(path);
+			});
 		},
 
-		addWidgetsAtPath: function(path, fn)
+		addWidgetsAtPath: function(path)
 		{
 			var _this = this;
 
 			_this.watch(path);
 
-			fs.readdir(path, function(err, names)
+			var names = fs.readdirSync(path);
+
+			_.each(names, function(name)
 			{
-				var next = function()
+				var f = _path.join(path, name);
+				var stat = fs.statSync(f);
+
+				if(stat && stat.isDirectory())
 				{
-					if(names.length == 0)
+					if(name != "i18n" && name != "static")
 					{
-						fn();
+						_this.addWidgetsAtPath(f);
 					}
-					else
-					{
-						var name = names.pop();
-						var f = _path.join(path, name);
+				}
+				else
+				{
+					_this.watch(f);
 
-						fs.stat(f, function(err, stat)
+					var m = /[^\.]*\.(ejs|js|css)/.exec(name.replace(/\.html$/, ".html.ejs"));
+					if(m)
+					{
+						var filename = _path.basename(f);
+
+						var ext = m[1];
+						var type = _path.basename(_path.dirname(f));
+						var widget = _this.widgets[type] || (_this.widgets[type] = new Widget(_path.dirname(f)));
+						var partialMatch = /^_([^.]*).html(\.ejs)?/.exec(filename);
+						var handlerMatch = /^_([^.]*)\.js/.exec(filename);
+						var testMatch = /^([^.]*)\.test\.js/.exec(filename);
+						if(partialMatch)
 						{
-							if(stat && stat.isDirectory())
-							{
-								if(name == "i18n" || name == "static")
-								{
-									next();
-								}
-								else
-								{
-									_this.addWidgetsAtPath(f, function()
-									{
-										next();
-									});
-								}
-							}
-							else
-							{
-								_this.watch(f);
-
-								var m = /[^\.]*\.(ejs|js|css)/.exec(name.replace(/\.html$/, ".html.ejs"));
-								if(m)
-								{
-									var filename = _path.basename(f);
-
-									var ext = m[1];
-									var type = _path.basename(_path.dirname(f));
-									var widget = _this.widgets[type] || (_this.widgets[type] = new Widget(_path.dirname(f)));
-									var partialMatch = /^_([^.]*).html(\.ejs)?/.exec(filename);
-									var handlerMatch = /^_([^.]*)\.js/.exec(filename);
-									var testMatch = /^([^.]*)\.test\.js/.exec(filename);
-									if(partialMatch)
-									{
-										widget.partials[partialMatch[1]] = f;
-									}
-									else if(handlerMatch)
-									{
-										widget.remoteHandlerFile = f;
-									}
-									else if(testMatch)
-									{
-										widget.tests[testMatch[1]] = f;
-									}
-									else
-									{
-										widget[ext+"File"] = f;
-									}
-									next();
-								}
-								else
-								{
-									next();
-								}
-							}
-						});
+							widget.partials[partialMatch[1]] = f;
+						}
+						else if(handlerMatch)
+						{
+							widget.remoteHandlerFile = f;
+						}
+						else if(testMatch)
+						{
+							widget.tests[testMatch[1]] = f;
+						}
+						else
+						{
+							widget[ext+"File"] = f;
+						}
 					}
-				};
-				next();
+				}
 			});
 		}
 	});
