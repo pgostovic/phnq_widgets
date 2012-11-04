@@ -375,9 +375,14 @@ require("phnq_log").exec("widget", function(log)
 			{
 				var path = _path.join(this.dir, "i18n", locale, "strings.json");
 				if(_fs.existsSync(path))
+				{
 					this.strings[locale] = JSON.parse(_fs.readFileSync(path, "UTF-8"));
+					require("./widget_manager").instance().watch(path);
+				}
 				else
+				{
 					this.strings[locale] = null;
+				}
 			}
 
 			if(this.strings[locale] && this.strings[locale][key])
@@ -391,16 +396,24 @@ require("phnq_log").exec("widget", function(log)
 
 		getTestCode: function()
 		{
+			var _this = this;
 			var buf = [];
+
+			buf.push("describe(\"isolated widget tests: "+this.type+"\", function() {");
+			buf.push("beforeEach(function(done){");
+			buf.push("browser.visit(\"http://localhost:7777/widgets/"+this.type+"\", function(){done();});");
+			buf.push("});");
+
 			_.each(this.tests, function(testFile, name)
 			{
-				// TODO -- add more stuff...
-
-				buf.push("(function(){");
+				buf.push("describe(\"\", function(){");
 				var code = _fs.readFileSync(testFile, "UTF-8");
 				buf.push(code);
-				buf.push("})();");
+				buf.push("});");
 			});
+
+			buf.push("});");
+
 			return buf.join("");
 		}
 	});
