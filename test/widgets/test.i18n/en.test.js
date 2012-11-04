@@ -1,5 +1,14 @@
 var assert = require("assert");
 
+
+beforeEach(function()
+{
+	browser.headers =
+	{
+		"accept-language": "en"
+	};
+});
+
 it("should display 'Hello World!' for the key 'helloworld'", function()
 {
 	assert.equal(browser.text("h1.helloworld"), "Hello World!");

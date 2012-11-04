@@ -400,8 +400,12 @@ require("phnq_log").exec("widget", function(log)
 			var buf = [];
 
 			buf.push("describe(\"isolated widget tests: "+this.type+"\", function() {");
+			buf.push("var browserOptions = {};");
 			buf.push("beforeEach(function(done){");
-			buf.push("browser.visit(\"http://localhost:7777/widgets/"+this.type+"\", function(){done();});");
+			buf.push("browser.visit(\"http://localhost:7777/widgets/"+this.type+"\", browserOptions, function(){done();});");
+			buf.push("});");
+			buf.push("after(function(){");
+			buf.push("browserOptions = {};");
 			buf.push("});");
 
 			_.each(this.tests, function(testFile, name)
