@@ -1,3 +1,4 @@
+require("phnq_log").setLevel("none");
 var phnq_widgets = require("../server/phnq_widgets");
 var browser = new (require("zombie"))();
 
