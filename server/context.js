@@ -17,11 +17,17 @@ require("phnq_log").exec("context", function(log)
 			this.embedded = [];
 		},
 
-		i18n: function(key)
+		i18n: function(key, defaultValue)
 		{
-			var locale = this.headers["accept-language"] || "en";
+			var locale = "en";
+			var acceptLang = this.headers["accept-language"];
+			if(acceptLang)
+			{
+				locale = acceptLang.split(",")[0];
+				locale = locale.split(";")[0];
+			}
 			var currentWidget = this.embedded.length == 0 ? this.theWidget : widgetManager.getWidget(this.embedded[this.embedded.length-1]);
-			return currentWidget.getString(key, locale) || "[MISSING_STRING("+locale+", "+currentWidget.type+") - "+key+"]";
+			return currentWidget.getString(key, locale) || defaultValue || "[MISSING_STRING("+locale+", "+currentWidget.type+") - "+key+"]";
 		},
 
 		nextId: function()
