@@ -27,7 +27,7 @@ require("phnq_log").exec("context", function(log)
 				locale = locale.split(";")[0];
 			}
 			var currentWidget = this.embedded.length == 0 ? this.theWidget : widgetManager.getWidget(this.embedded[this.embedded.length-1]);
-			return currentWidget.getString(key, locale) || defaultValue || "[MISSING_STRING("+locale+", "+currentWidget.type+") - "+key+"]";
+			return currentWidget.getI18nString(key, locale) || defaultValue || "[MISSING_STRING("+locale+", "+currentWidget.type+") - "+key+"]";
 		},
 
 		nextId: function()

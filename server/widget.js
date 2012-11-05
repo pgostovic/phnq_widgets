@@ -262,7 +262,7 @@ require("phnq_log").exec("widget", function(log)
 
 				this.dependencies = _.uniq(_.union(deps, depDeps));
 			}
-			return this.dependencies;
+			return _.clone(this.dependencies);
 		},
 
 		getFileData: function(ext)
@@ -369,8 +369,10 @@ require("phnq_log").exec("widget", function(log)
 			return shellCode;
 		},
 
-		getString: function(key, locale)
+		getI18nString: function(key, locale, localeOrig)
 		{
+			localeOrig = localeOrig || locale;
+
 			if(this.strings[locale] === undefined)
 			{
 				var path = _path.join(this.dir, "i18n", locale, "strings.json");
@@ -389,7 +391,16 @@ require("phnq_log").exec("widget", function(log)
 				return this.strings[locale][key];
 
 			if(locale)
-				return this.getString(key, getParentLocale(locale));
+				return this.getI18nString(key, getParentLocale(locale), localeOrig);
+
+			var deps = this.getDependencies();
+			for(var i=0; i<deps.length; i++)
+			{
+				var depWidget = require("./widget_manager").instance().getWidget(deps[i]);
+				var str = depWidget.getI18nString(key, localeOrig);
+				if(str)
+					return str;
+			}
 
 			return null;
 		},
