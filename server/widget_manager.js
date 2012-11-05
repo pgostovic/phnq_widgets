@@ -220,13 +220,13 @@ require("phnq_log").exec("widget_manager", function(log)
 			}
 		},
 
-		getTestCode: function()
+		getTestCode: function(baseUrl)
 		{
 			var buf = [];
 			this.scan();
 			_.each(this.widgets, function(widget)
 			{
-				buf.push(widget.getTestCode());
+				buf.push(widget.getTestCode(baseUrl));
 			});
 			return buf.join("");
 		},

@@ -436,7 +436,7 @@ require("phnq_log").exec("widget", function(log)
 			return null;
 		},
 
-		getTestCode: function()
+		getTestCode: function(baseUrl)
 		{
 			var _this = this;
 			var buf = [];
@@ -444,7 +444,7 @@ require("phnq_log").exec("widget", function(log)
 			buf.push("describe(\"Tests for widget: "+this.type+"\", function() {");
 			buf.push("var browserOptions = {};");
 			buf.push("beforeEach(function(done){");
-			buf.push("browser.visit(\"http://localhost:7777/widgets/"+this.type+"\", browserOptions, function(){done();});");
+			buf.push("browser.visit(\""+baseUrl+this.type+"\", browserOptions, function(){done();});");
 			buf.push("});");
 			buf.push("after(function(){");
 			buf.push("browserOptions = {};");

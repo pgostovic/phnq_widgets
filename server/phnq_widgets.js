@@ -72,9 +72,10 @@ require("phnq_log").exec("phnq_widgets", function(log)
 			res.send(widget.getWidgetShellCode(context));
 		},
 
-		getTestCode: function()
+		getTestCode: function(options)
 		{
-			return widgetManager.getTestCode();
+			var baseUrl = options.baseUrl + config.uriPrefix + "/";
+			return widgetManager.getTestCode(baseUrl);
 		},
 
 		config: config
