@@ -22,7 +22,7 @@ require("phnq_log").exec("widget", function(log)
 		{
 			this.type = _path.basename(dir);
 			this.dir = dir;
-			this.strings = {};
+			this.i18nStrings = null;
 			this.partials = {};
 			this.tests = {};
 			log.debug("discovered widget: ", this.type);
@@ -51,8 +51,11 @@ require("phnq_log").exec("widget", function(log)
 			if(this.script === undefined)
 			{
 				var _this = this;
-				var rawScript = this.getFileData("js");
-				if(rawScript)
+				var rawScript = this.getFileData("js") || "";
+				var i18nStrings = this.getI18nStrings();
+				var deps = this.getDependencies();
+
+				if(!!rawScript || _.keys(i18nStrings).length > 0 || deps.length > 0)
 				{
 					var scriptTmplt = getCompiledScriptTemplate();
 					this.script = phnq_core.trimLines(scriptTmplt(
@@ -60,7 +63,9 @@ require("phnq_log").exec("widget", function(log)
 						type: _this.type,
 						script: rawScript,
 						partialTemplates: JSON.stringify(_this.getCompiledPartials()),
-						remoteMethodNames: JSON.stringify(_.keys(_this.getRemoteHandlers()))
+						remoteMethodNames: JSON.stringify(_.keys(_this.getRemoteHandlers())),
+						i18nStrings: JSON.stringify(i18nStrings),
+						dependencies: JSON.stringify(deps)
 					}));
 				}
 				else
@@ -346,6 +351,14 @@ require("phnq_log").exec("widget", function(log)
 				}
 			}
 
+			var locale = "en";
+			var acceptLang = context.headers["accept-language"];
+			if(acceptLang)
+			{
+				locale = acceptLang.split(",")[0];
+				locale = locale.split(";")[0];
+			}
+
 			var inlineScript = config.inlineScript ? widgetManager.getAggregatedScript(types) : null;
 			var inlineStyle = config.inlineStyle ? widgetManager.getAggregatedStyle(types) : null;
 			var aggScript = config.inlineScript ? null : widgetManager.getAggregatedScriptName(types);
@@ -355,6 +368,7 @@ require("phnq_log").exec("widget", function(log)
 			var shellCode = shellFn(
 			{
 				title: title,
+				lang: locale,
 				prefix: config.uriPrefix,
 				body: markup,
 				jQueryCDN: config.jQueryCDN,
@@ -369,26 +383,43 @@ require("phnq_log").exec("widget", function(log)
 			return shellCode;
 		},
 
+		getI18nStrings: function()
+		{
+			if(!this.i18nStrings)
+			{
+				var _this = this;
+				this.i18nStrings = {};
+				var i18nDir = _path.join(this.dir, "i18n");
+				if(_fs.existsSync(i18nDir))
+				{
+					var locales = _fs.readdirSync(i18nDir);
+					locales.push(null); // this is the default locale
+					_.each(locales, function(locale)
+					{
+						if(_fs.statSync(_path.join(i18nDir, locale)).isDirectory())
+						{
+							var stringsFilePath = _path.join(i18nDir, locale, "strings.json");
+							var stat = _fs.statSync(stringsFilePath);
+							if(stat && stat.isFile())
+							{
+								_this.i18nStrings[locale] = JSON.parse(_fs.readFileSync(stringsFilePath, "UTF-8"));
+								require("./widget_manager").instance().watch(stringsFilePath);
+							}
+						}
+					});
+				}
+			}
+			return this.i18nStrings;
+		},
+
 		getI18nString: function(key, locale, localeOrig)
 		{
 			localeOrig = localeOrig || locale;
 
-			if(this.strings[locale] === undefined)
-			{
-				var path = _path.join(this.dir, "i18n", locale, "strings.json");
-				if(_fs.existsSync(path))
-				{
-					this.strings[locale] = JSON.parse(_fs.readFileSync(path, "UTF-8"));
-					require("./widget_manager").instance().watch(path);
-				}
-				else
-				{
-					this.strings[locale] = null;
-				}
-			}
+			var i18nStrings = this.getI18nStrings();
 
-			if(this.strings[locale] && this.strings[locale][key])
-				return this.strings[locale][key];
+			if(i18nStrings[locale] && i18nStrings[locale][key])
+				return i18nStrings[locale][key];
 
 			if(locale)
 				return this.getI18nString(key, getParentLocale(locale), localeOrig);

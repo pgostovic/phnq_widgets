@@ -9,6 +9,8 @@ phnq_log.exec("widgets", function(log)
 	{
 		config: {}, // this gets filled in from the server
 
+		widgetClasses: widgetClasses,
+
 		create: function(type, obj)
 		{
 			obj.order = obj.order || 0;
@@ -188,6 +190,7 @@ phnq_log.exec("widgets", function(log)
 					var paramsMatcher = /<!--(.*)?-->/.exec($(wphElmnt).html());
 					var params = paramsMatcher ? JSON.parse(paramsMatcher[1]) : {};
 					var context = new phnq_widgets.Context(params);
+					context.type = type;
 
 					var markup = tmpltFn(context);
 
