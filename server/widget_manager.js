@@ -7,6 +7,7 @@ require("phnq_log").exec("widget_manager", function(log)
 	var _ = require("underscore");
 	var config = require("./config");
 	var crypto = require("crypto");
+	var less = require("less");
 
 	var instance = null;
 
@@ -28,6 +29,7 @@ require("phnq_log").exec("widget_manager", function(log)
 			this.widgets = null;
 			this.lastScanMillis = 0;
 			this.watched = {};
+			this.lessFiles = null;
 		},
 
 		getIndex: function()
@@ -109,7 +111,26 @@ require("phnq_log").exec("widget_manager", function(log)
 
 		getAggregatedStyle: function(types)
 		{
-			return this.getAggregate(types, "style");
+			var buf = [];
+			_.each(this.lessFiles, function(lessFile)
+			{
+				buf.push(fs.readFileSync(lessFile, "UTF-8"));
+			});
+			buf.push(this.getAggregate(types, "style"));
+
+			var parser = new(less.Parser);
+			parser.parse(buf.join(""), function(err, tree)
+			{
+				if(err)
+				{
+					log.error("unable to less\'ify style: ", err.message);
+				}
+				else
+				{
+					style = tree.toCSS({ yuicompress: true });
+				}
+			});
+			return style;
 		},
 
 		getAggregate: function(types, format)
@@ -251,6 +272,7 @@ require("phnq_log").exec("widget_manager", function(log)
 			var _this = this;
 
 			this.widgets = {};
+			this.lessFiles = [];
 
 			var paths = this.scanPaths.slice(0).reverse();
 			paths.push(_path.join(__dirname, "../widgets"));
@@ -284,34 +306,41 @@ require("phnq_log").exec("widget_manager", function(log)
 				}
 				else
 				{
-					_this.watch(f);
-
-					var m = /[^\.]*\.(ejs|js|css)/.exec(name.replace(/\.html$/, ".html.ejs"));
-					if(m)
+					if(name.match(/.*\.less$/))
 					{
-						var filename = _path.basename(f);
+						_this.lessFiles.push(f);
+					}
+					else
+					{
+						var m = /[^\.]*\.(ejs|js|css)/.exec(name.replace(/\.html$/, ".html.ejs"));
+						if(m)
+						{
+							_this.watch(f);
 
-						var ext = m[1];
-						var type = _path.basename(_path.dirname(f));
-						var widget = _this.widgets[type] || (_this.widgets[type] = new Widget(_path.dirname(f)));
-						var partialMatch = /^_([^.]*).html(\.ejs)?/.exec(filename);
-						var handlerMatch = /^_([^.]*)\.js/.exec(filename);
-						var testMatch = /^([^.]*)\.test\.js/.exec(filename);
-						if(partialMatch)
-						{
-							widget.partials[partialMatch[1]] = f;
-						}
-						else if(handlerMatch)
-						{
-							widget.remoteHandlerFile = f;
-						}
-						else if(testMatch)
-						{
-							widget.tests[testMatch[1]] = f;
-						}
-						else
-						{
-							widget[ext+"File"] = f;
+							var filename = _path.basename(f);
+
+							var ext = m[1];
+							var type = _path.basename(_path.dirname(f));
+							var widget = _this.widgets[type] || (_this.widgets[type] = new Widget(_path.dirname(f)));
+							var partialMatch = /^_([^.]*).html(\.ejs)?/.exec(filename);
+							var handlerMatch = /^_([^.]*)\.js/.exec(filename);
+							var testMatch = /^([^.]*)\.test\.js/.exec(filename);
+							if(partialMatch)
+							{
+								widget.partials[partialMatch[1]] = f;
+							}
+							else if(handlerMatch)
+							{
+								widget.remoteHandlerFile = f;
+							}
+							else if(testMatch)
+							{
+								widget.tests[testMatch[1]] = f;
+							}
+							else
+							{
+								widget[ext+"File"] = f;
+							}
 						}
 					}
 				}

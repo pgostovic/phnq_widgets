@@ -99,26 +99,6 @@ require("phnq_log").exec("widget", function(log)
 				}
 				buf.push(this.style.substring(idx));
 				this.style = buf.join("");
-
-				try
-				{
-					var _this = this;
-					less.render(this.style, function(err, css)
-					{
-						if(err)
-						{
-							log.info("Unable to less\'ify css for "+_this.type+": ", err.message);
-						}
-						else
-						{
-							_this.style = css;
-						}
-					});
-				}
-				catch(ex)
-				{
-					log.debug("ex: ", ex);
-				}
 			}
 			return this.style;
 		},
