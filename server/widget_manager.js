@@ -118,8 +118,10 @@ require("phnq_log").exec("widget_manager", function(log)
 			});
 			buf.push(this.getAggregate(types, "style"));
 
+			var style = buf.join("");
+
 			var parser = new(less.Parser);
-			parser.parse(buf.join(""), function(err, tree)
+			parser.parse(style, function(err, tree)
 			{
 				if(err)
 				{
