@@ -6,6 +6,7 @@ require("phnq_log").exec("widget", function(log)
 	var _fs = require("fs");
 	var config = require("./config");
 	var _ = require("underscore");
+	var less = require("less");
 
 	var URL_REGEX = /url\(["']?([^)\"']*)["']?\)/g;
 	var EMPTY_TAGS = ["base", "basefont", "br", "col", "frame", "hr", "img", "input", "link", "meta", "param"];
@@ -98,6 +99,26 @@ require("phnq_log").exec("widget", function(log)
 				}
 				buf.push(this.style.substring(idx));
 				this.style = buf.join("");
+
+				try
+				{
+					var _this = this;
+					less.render(this.style, function(err, css)
+					{
+						if(err)
+						{
+							log.info("Unable to less\'ify css for "+_this.type+": ", err.message);
+						}
+						else
+						{
+							_this.style = css;
+						}
+					});
+				}
+				catch(ex)
+				{
+					log.debug("ex: ", ex);
+				}
 			}
 			return this.style;
 		},
