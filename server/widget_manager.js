@@ -307,7 +307,7 @@ require("phnq_log").exec("widget_manager", function(log)
 			var nowMillis = new Date().getTime();
 
 			if((nowMillis - this.lastScanMillis) < 2000)
-				return fn();
+				return;
 
 			log.info("Scanning for widgets...");
 
