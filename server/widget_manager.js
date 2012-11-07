@@ -30,6 +30,8 @@ require("phnq_log").exec("widget_manager", function(log)
 			this.lastScanMillis = 0;
 			this.watched = {};
 			this.lessFiles = null;
+			this.aggScriptCache = {};
+			this.aggStyleCache = {};
 		},
 
 		getIndex: function()
@@ -66,21 +68,34 @@ require("phnq_log").exec("widget_manager", function(log)
 
 		processScript: function(script)
 		{
+			log.debug("Processing script... (this should not get called very often -- result should be cached)");
 			if(config.compressJS)
 			{
+				log.startTimer();
+				var len1 = script.length;
 				var jsp = require("uglify-js").parser;
 				var pro = require("uglify-js").uglify;
 
 				var ast = jsp.parse(script); // parse code and get the initial AST
 				ast = pro.ast_mangle(ast); // get a new AST with mangled names
 				ast = pro.ast_squeeze(ast); // get an AST with compression optimizations
-				script = pro.gen_code(ast); // compressed code here		
+				script = pro.gen_code(ast); // compressed code here
+
+				var len2 = script.length;
+				var percentReduc = Math.round(1000*(len1-len2)/len1)/10;
+
+				log.debug("Compressing script: "+len1+"bytes to "+len2+" bytes ("+percentReduc+"%)");
 			}
+			log.debug("Done processing script.");
 			return script;
 		},
 
 		processStyle: function(style)
 		{
+			log.debug("Processing style... (this should not get called very often -- result should be cached)");
+
+			log.startTimer();
+
 			var parser = new(less.Parser);
 			parser.parse(style, function(err, tree)
 			{
@@ -93,6 +108,7 @@ require("phnq_log").exec("widget_manager", function(log)
 					style = tree.toCSS({ yuicompress: config.compressCSS });
 				}
 			});
+			log.debug("Done processing style.");
 			return style;
 		},
 
@@ -138,19 +154,30 @@ require("phnq_log").exec("widget_manager", function(log)
 
 		getAggregatedScript: function(types)
 		{
-			return this.processScript(this.getAggregate(types, "script"));
+			var key = types.sort().join(",");
+			var script = this.aggScriptCache[key];
+			if(!script)
+			{
+				script = this.aggScriptCache[key] = this.processScript(this.getAggregate(types, "script"));
+			}
+			return script;
 		},
 
 		getAggregatedStyle: function(types)
 		{
-			var buf = [];
-			_.each(this.lessFiles, function(lessFile)
+			var key = types.sort().join(",");
+			var style = this.aggStyleCache[key];
+			if(!style)
 			{
-				buf.push(fs.readFileSync(lessFile, "UTF-8"));
-			});
-			buf.push(this.getAggregate(types, "style"));
-
-			return this.processStyle(buf.join(""));
+				var buf = [];
+				_.each(this.lessFiles, function(lessFile)
+				{
+					buf.push(fs.readFileSync(lessFile, "UTF-8"));
+				});
+				buf.push(this.getAggregate(types, "style"));
+				style = this.aggStyleCache[key] = this.processStyle(buf.join(""));
+			}
+			return style;
 		},
 
 		getAggregate: function(types, format)
