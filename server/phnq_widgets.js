@@ -295,17 +295,6 @@ require("phnq_log").exec("phnq_widgets", function(log)
 		buf.push(JSON.stringify(phnq_widgets.config));
 		buf.push(";");
 
-		return clientBoot = buf.join("");
-
-		// var jsp = require("uglify-js").parser;
-		// var pro = require("uglify-js").uglify;
-
-		// var orig_code = buf.join("");
-		// var ast = jsp.parse(orig_code); // parse code and get the initial AST
-		// ast = pro.ast_mangle(ast); // get a new AST with mangled names
-		// ast = pro.ast_squeeze(ast); // get an AST with compression optimizations
-		// var final_code = pro.gen_code(ast); // compressed code here		
-
-		// return clientBoot = final_code;
+		return clientBoot = widgetManager.processScript(buf.join(""));
 	};
 });

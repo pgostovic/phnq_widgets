@@ -64,6 +64,38 @@ require("phnq_log").exec("widget_manager", function(log)
 			return this.widgets[type];
 		},
 
+		processScript: function(script)
+		{
+			if(config.compressJS)
+			{
+				var jsp = require("uglify-js").parser;
+				var pro = require("uglify-js").uglify;
+
+				var ast = jsp.parse(script); // parse code and get the initial AST
+				ast = pro.ast_mangle(ast); // get a new AST with mangled names
+				ast = pro.ast_squeeze(ast); // get an AST with compression optimizations
+				script = pro.gen_code(ast); // compressed code here		
+			}
+			return script;
+		},
+
+		processStyle: function(style)
+		{
+			var parser = new(less.Parser);
+			parser.parse(style, function(err, tree)
+			{
+				if(err)
+				{
+					log.error("unable to less\'ify style: ", err.message);
+				}
+				else
+				{
+					style = tree.toCSS({ yuicompress: config.compressCSS });
+				}
+			});
+			return style;
+		},
+
 		getAggregatedScriptName: function(types)
 		{
 			types.sort();
@@ -106,7 +138,7 @@ require("phnq_log").exec("widget_manager", function(log)
 
 		getAggregatedScript: function(types)
 		{
-			return this.getAggregate(types, "script");
+			return this.processScript(this.getAggregate(types, "script"));
 		},
 
 		getAggregatedStyle: function(types)
@@ -118,21 +150,7 @@ require("phnq_log").exec("widget_manager", function(log)
 			});
 			buf.push(this.getAggregate(types, "style"));
 
-			var style = buf.join("");
-
-			var parser = new(less.Parser);
-			parser.parse(style, function(err, tree)
-			{
-				if(err)
-				{
-					log.error("unable to less\'ify style: ", err.message);
-				}
-				else
-				{
-					style = tree.toCSS({ yuicompress: true });
-				}
-			});
-			return style;
+			return this.processStyle(buf.join(""));
 		},
 
 		getAggregate: function(types, format)

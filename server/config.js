@@ -5,5 +5,7 @@ module.exports =
 	idPrefixClient: "cw_",
 	inlineScript: false,
 	inlineStyle: false,
-	jQueryCDN: false
+	jQueryCDN: false,
+	compressJS: false,
+	compressCSS: false
 };
