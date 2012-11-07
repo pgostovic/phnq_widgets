@@ -320,6 +320,8 @@ require("phnq_log").exec("widget_manager", function(log)
 
 			this.widgets = {};
 			this.lessFiles = [];
+			this.aggScriptCache = {};
+			this.aggStyleCache = {};
 
 			var paths = this.scanPaths.slice(0).reverse();
 			paths.push(_path.join(__dirname, "../widgets"));
