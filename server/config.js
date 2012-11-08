@@ -6,6 +6,8 @@ module.exports =
 	inlineScript: false,
 	inlineStyle: false,
 	jQueryCDN: false,
-	compressJS: false,
-	compressCSS: false
+	minifyJS: true,
+	minifyCSS: true,
+	compressJS: true,
+	compressCSS: true
 };

@@ -8,6 +8,7 @@ require("phnq_log").exec("widget_manager", function(log)
 	var config = require("./config");
 	var crypto = require("crypto");
 	var less = require("less");
+	var zlib = require("zlib");
 
 	var instance = null;
 
@@ -69,9 +70,11 @@ require("phnq_log").exec("widget_manager", function(log)
 		processScript: function(script)
 		{
 			log.debug("Processing script... (this should not get called very often -- result should be cached)");
-			if(config.compressJS)
+			if(config.minifyJS)
 			{
+				log.debug("Minifying JS...");
 				log.startTimer();
+
 				var len1 = script.length;
 				var jsp = require("uglify-js").parser;
 				var pro = require("uglify-js").uglify;
@@ -84,8 +87,9 @@ require("phnq_log").exec("widget_manager", function(log)
 				var len2 = script.length;
 				var percentReduc = Math.round(1000*(len1-len2)/len1)/10;
 
-				log.debug("Compressing script: "+len1+"bytes to "+len2+" bytes ("+percentReduc+"%)");
+				log.debug("Minified script: "+len1+"bytes to "+len2+" bytes ("+percentReduc+"%)");
 			}
+
 			log.debug("Done processing script.");
 			return script;
 		},
@@ -105,7 +109,7 @@ require("phnq_log").exec("widget_manager", function(log)
 				}
 				else
 				{
-					style = tree.toCSS({ yuicompress: config.compressCSS });
+					style = tree.toCSS({ yuicompress: config.minifyCSS });
 				}
 			});
 			log.debug("Done processing style.");
@@ -228,51 +232,102 @@ require("phnq_log").exec("widget_manager", function(log)
 			}
 		},
 
-		createAggDir: function()
+		createAggDir: function(fn)
 		{
 			var aggDir = _path.join(module.exports.appRoot, "/agg/");
 
-			if(!fs.existsSync(aggDir))
+			fs.exists(aggDir, function(exists)
 			{
+				if(exists)
+					return fn();
+
 				log.debug("Creating agg dir: ", aggDir);
-				fs.mkdirSync(aggDir);
-			}
+				fs.mkdir(aggDir, function()
+				{
+					fn();
+				});
+			});
 		},
 
-		generateAggregateScript: function(name)
+		generateAggregateScript: function(name, options, fn)
 		{
-			var index = this.getIndex();
-			var comps = name.split("_");
-			comps.pop();
-			var typesBitset = new phnq_core.BitSet(comps);
-			var types = [];
-			for(var i=0; i<index.length; i++)
-			{
-				if(typesBitset.isSet(i))
-					types.push(index[i]);
-			}
-			var path = _path.join(module.exports.appRoot, "/agg/"+this.getAggregatedScriptName(types)+".js");
-			log.debug("generating aggregate script file: "+path);
-			this.createAggDir();
-			fs.writeFileSync(path, this.getAggregatedScript(types), "UTF-8");
+			options.script = true;
+			this.generateAggregate(name, options, fn);
 		},
 
-		generateAggregateStyle: function(name)
+		generateAggregateStyle: function(name, options, fn)
 		{
-			var index = this.getIndex();
-			var comps = name.split("_");
-			comps.pop();
-			var typesBitset = new phnq_core.BitSet(comps);
-			var types = [];
-			for(var i=0; i<index.length; i++)
+			options.style = true;
+			this.generateAggregate(name, options, fn);
+		},
+
+		generateAggregate: function(name, options, fn)
+		{
+			var _this = this;
+
+			options = options || {};
+			options.gzip = !!options.gzip;
+			options.style = !!options.style;
+			options.script = !!options.script;
+
+			var ext;
+			var getAggFn;
+			if(options.style)
 			{
-				if(typesBitset.isSet(i))
-					types.push(index[i]);
+				ext = ".css";
+				getAggFn = this.getAggregatedStyle;
 			}
-			var path = _path.join((module.exports.appRoot), "/agg/"+this.getAggregatedStyleName(types)+".css");
-			log.debug("generating aggregate style file: "+path);
-			this.createAggDir();
-			fs.writeFileSync(path, this.getAggregatedStyle(types), "UTF-8");
+			else if(options.script)
+			{
+				ext = ".js";
+				getAggFn = this.getAggregatedScript;
+			}
+			else
+			{
+				throw "Either teh style or script option must be set to true.";
+			}
+
+			var path = _path.join(module.exports.appRoot, "/agg/"+name+ext);
+			fs.exists(path+(options.gzip?".gzip":""), function(exists)
+			{
+				if(exists)
+					return fn();
+
+				var index = _this.getIndex();
+				var comps = name.split("_");
+				comps.pop();
+				var typesBitset = new phnq_core.BitSet(comps);
+				var types = [];
+				for(var i=0; i<index.length; i++)
+				{
+					if(typesBitset.isSet(i))
+						types.push(index[i]);
+				}
+
+				log.debug("generating aggregate file: "+path);
+				_this.createAggDir(function()
+				{
+					fs.writeFile(path, getAggFn.call(_this, types), "UTF-8", function(err)
+					{
+						if(options.gzip)
+						{
+							log.debug("compressing aggregate file: "+path);
+							var gzip = zlib.createGzip();
+							var inp = fs.createReadStream(path);
+							var out = fs.createWriteStream(path + ".gzip");
+							out.on("close", function()
+							{
+								fn();
+							});
+							inp.pipe(gzip).pipe(out);
+						}
+						else
+						{
+							fn();
+						}
+					});
+				});
+			});
 		},
 
 		watch: function(path)

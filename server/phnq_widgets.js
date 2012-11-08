@@ -179,11 +179,15 @@ require("phnq_log").exec("phnq_widgets", function(log)
 
 		app.get(config.uriPrefix+"/agg/:aggFile.js", function(req, res)
 		{
-			var path = _path.join(appRoot, "/agg/"+req.params.aggFile+".js");
-			_fs.exists(path, function(exists)
+			var ext = config.compressJS ? ".js.gzip" : ".js";
+			var path = _path.join(appRoot, "/agg/"+req.params.aggFile+ext);
+
+			widgetManager.generateAggregateScript(req.params.aggFile, {gzip:config.compressJS}, function()
 			{
-				if(!exists)
-					widgetManager.generateAggregateScript(req.params.aggFile);
+				res.type("js");
+
+				if(config.compressCSS)
+					res.header("Content-Encoding", "gzip");
 
 				res.sendfile(path);
 			});
@@ -191,11 +195,15 @@ require("phnq_log").exec("phnq_widgets", function(log)
 
 		app.get(config.uriPrefix+"/agg/:aggFile.css", function(req, res)
 		{
-			var path = _path.join(appRoot, "/agg/"+req.params.aggFile+".css");
-			_fs.exists(path, function(exists)
+			var ext = config.compressCSS ? ".css.gzip" : ".css";
+			var path = _path.join(appRoot, "/agg/"+req.params.aggFile+ext);
+
+			widgetManager.generateAggregateStyle(req.params.aggFile, {gzip:config.compressCSS}, function()
 			{
-				if(!exists)
-					widgetManager.generateAggregateStyle(req.params.aggFile);
+				res.type("css");
+
+				if(config.compressCSS)
+					res.header("Content-Encoding", "gzip");
 
 				res.sendfile(path);
 			});
