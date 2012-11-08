@@ -362,7 +362,7 @@ phnq_log.exec("widgets", function(log)
 
 			wph: function(type, params)
 			{
-				return "<span class=\"wph "+type+"\"><!--"+JSON.stringify(params)+"--></span>";
+				return "<span class=\"wph "+type+"\"><!--"+JSON.stringify(params||{})+"--><br/></span>";
 			},
 
 			boundObject: function()
