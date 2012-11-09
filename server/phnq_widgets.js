@@ -108,7 +108,7 @@ require("phnq_log").exec("phnq_widgets", function(log)
 		// TODO: make this cacheable.
 		app.get(config.uriPrefix+"/boot", function(req, res)
 		{
-			res.contentType("js");
+			res.type("js");
 			res.send(getClientBoot());
 		});
 
