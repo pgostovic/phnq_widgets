@@ -8,6 +8,6 @@ module.exports =
 	jQueryCDN: false,
 	minifyJS: true,
 	minifyCSS: true,
-	compressJS: true,
-	compressCSS: true
+	compressJS: false,
+	compressCSS: false
 };
