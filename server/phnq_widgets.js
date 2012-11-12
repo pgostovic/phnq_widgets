@@ -214,7 +214,7 @@ require("phnq_log").exec("phnq_widgets", function(log)
 			phnq_widgets.renderWidget(req.params.widgetType, {}, req, res);
 		});
 
-		app.get(new RegExp(config.uriPrefix+"/([^/]*)/static/(.*)"), function(req, res)
+		app.get(new RegExp(config.uriPrefix+"/([^/]*)/_?static/(.*)"), function(req, res)
 		{
 			var widgetType = req.params[0];
 			var staticPath = req.params[1];
