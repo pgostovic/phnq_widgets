@@ -19,9 +19,9 @@ require("phnq_log").exec("widget", function(log)
 
 	module.exports = phnq_core.clazz(
 	{
-		init: function(dir)
+		init: function(type, dir)
 		{
-			this.type = _path.basename(dir);
+			this.type = type;
 			this.dir = dir;
 			this.i18nStrings = null;
 			this.partials = {};

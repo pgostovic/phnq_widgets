@@ -20,18 +20,22 @@ if(program.generate)
 			fn(program.generate);
 	})(function(name)
 	{
-		var widgetsDir = path.join(process.cwd(), "widgets")
+		var comps = name.split(".");
+		comps.splice(0, 0, "widgets");
 
-		if(!fs.existsSync(widgetsDir))
-			fs.mkdirSync(widgetsDir);
-
-		var widgetDir = path.join(widgetsDir, name);
-		if(!fs.existsSync(widgetDir))
-			fs.mkdirSync(widgetDir);
+		var dir = process.cwd();
+		while(comps.length > 0)
+		{
+			var comp = comps[0];
+			comps.splice(0, 1);
+			dir = path.join(dir, comp);
+			if(!fs.existsSync(dir))
+				fs.mkdirSync(dir);
+		}
 
 		var nameComps = name.split(".");
 		var baseName = nameComps[nameComps.length-1];
-		var rootName = path.join(widgetDir, baseName);
+		var rootName = path.join(dir, baseName);
 
 		if(!fs.existsSync(rootName+".html"))
 		{

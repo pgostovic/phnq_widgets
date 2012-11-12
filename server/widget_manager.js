@@ -384,11 +384,11 @@ require("phnq_log").exec("widget_manager", function(log)
 
 			_.each(_.uniq(paths), function(path)
 			{
-				_this.addWidgetsAtPath(path);
+				_this.addWidgetsAtPath(path, path);
 			});
 		},
 
-		addWidgetsAtPath: function(path)
+		addWidgetsAtPath: function(path, basePath)
 		{
 			var _this = this;
 
@@ -405,7 +405,7 @@ require("phnq_log").exec("widget_manager", function(log)
 				{
 					if(name != "i18n" && name != "static")
 					{
-						_this.addWidgetsAtPath(f);
+						_this.addWidgetsAtPath(f, basePath);
 					}
 				}
 				else
@@ -419,13 +419,16 @@ require("phnq_log").exec("widget_manager", function(log)
 						var m = /[^\.]*\.(ejs|js|css)/.exec(name.replace(/\.html$/, ".html.ejs"));
 						if(m)
 						{
+							var type = _path.basename(_path.dirname(f));
+							if(!type.match(/\./))
+								type = _path.relative(basePath, _path.dirname(f)).split("/").join(".");
+
 							_this.watch(f);
 
 							var filename = _path.basename(f);
 
 							var ext = m[1];
-							var type = _path.basename(_path.dirname(f));
-							var widget = _this.widgets[type] || (_this.widgets[type] = new Widget(_path.dirname(f)));
+							var widget = _this.widgets[type] || (_this.widgets[type] = new Widget(type, _path.dirname(f)));
 							var partialMatch = /^_([^.]*).html(\.ejs)?/.exec(filename);
 							var handlerMatch = /^_([^.]*)\.js/.exec(filename);
 							var testMatch = /^([^.]*)\.test\.js/.exec(filename);
