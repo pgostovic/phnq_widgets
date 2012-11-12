@@ -28,5 +28,9 @@
   "engines"       :
   {
     "node": "0.8.x"
-  }
+  },
+  "bin":
+  {
+    "phnq_widgets": "./bin/phnq_widgets"
+  },
 }
