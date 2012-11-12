@@ -390,7 +390,7 @@ require("phnq_log").exec("widget", function(log)
 			{
 				var _this = this;
 				this.i18nStrings = {};
-				var i18nDir = _path.join(this.dir, "i18n");
+				var i18nDir = _path.join(this.dir, "_i18n");
 				if(_fs.existsSync(i18nDir))
 				{
 					var locales = _fs.readdirSync(i18nDir);

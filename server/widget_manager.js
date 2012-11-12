@@ -403,7 +403,7 @@ require("phnq_log").exec("widget_manager", function(log)
 
 				if(stat && stat.isDirectory())
 				{
-					if(name != "i18n" && name != "static")
+					if(name != "_i18n" && name != "_static")
 					{
 						_this.addWidgetsAtPath(f, basePath);
 					}

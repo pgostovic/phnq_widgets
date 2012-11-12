@@ -223,7 +223,7 @@ require("phnq_log").exec("phnq_widgets", function(log)
 			if(!widget)
 				return res.send(404);
 
-			res.sendfile(_path.join(widget.dir, "static", staticPath));
+			res.sendfile(_path.join(widget.dir, "_static", staticPath));
 		});
 
 		app.post(config.uriPrefix+"/:widgetType/remote/:cmd", function(req, res)
