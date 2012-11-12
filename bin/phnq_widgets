@@ -1,0 +1,54 @@
+#!/usr/bin/env node
+
+var program = require("commander");
+var pkg = require("../package.json");
+var path = require("path");
+var fs = require("fs");
+
+program
+  .version(pkg.version)
+  .option("-g, --generate [name]", "generate a basic widget")
+  .parse(process.argv);
+
+if(program.generate)
+{
+	(function(fn)
+	{
+		if(program.generate === true)
+			program.prompt("widget name: ", fn);
+		else
+			fn(program.generate);
+	})(function(name)
+	{
+		var widgetsDir = path.join(process.cwd(), "widgets")
+
+		if(!fs.existsSync(widgetsDir))
+			fs.mkdirSync(widgetsDir);
+
+		var widgetDir = path.join(widgetsDir, name);
+		if(!fs.existsSync(widgetDir))
+			fs.mkdirSync(widgetDir);
+
+		var nameComps = name.split(".");
+		var baseName = nameComps[nameComps.length-1];
+		var rootName = path.join(widgetDir, baseName);
+
+		if(!fs.existsSync(rootName+".html"))
+		{
+			console.log("generate: "+path.relative(process.cwd(), rootName+".html"));
+			fs.writeFileSync(rootName+".html", "<div>\n</div>\n", "UTF-8");
+		}
+
+		if(!fs.existsSync(rootName+".css"))
+		{
+			console.log("generate: "+path.relative(process.cwd(), rootName+".css"));
+			fs.writeFileSync(rootName+".css", ".__CLASS__\n{\n}\n", "UTF-8");
+		}
+
+		if(!fs.existsSync(rootName+".js"))
+		{
+			console.log("generate: "+path.relative(process.cwd(), rootName+".js"));
+			fs.writeFileSync(rootName+".js", "var widget =\n{\n\tready: function($$)\n\t{\n\t\t// widget has been rendered\n\t}\n};\n", "UTF-8");
+		}
+	});
+}
