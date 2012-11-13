@@ -69,7 +69,10 @@ require("phnq_log").exec("phnq_widgets", function(log)
 
 			phnq_core.extend(context, new Context(widget, req));
 
-			res.send(widget.getWidgetShellCode(context));
+			widget.getWidgetShellCode(context, function(code)
+			{
+				res.send(code);
+			});
 		},
 
 		getTestCode: function(options)

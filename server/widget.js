@@ -314,7 +314,7 @@ require("phnq_log").exec("widget", function(log)
 			return attrValue;
 		},
 
-		getWidgetShellCode: function(context)
+		getWidgetShellCode: function(context, fn)
 		{
 			var title = this.type;
 			var widgetManager = require("./widget_manager").instance();
@@ -365,6 +365,12 @@ require("phnq_log").exec("widget", function(log)
 			var aggScript = config.inlineScript ? null : widgetManager.getAggregatedScriptName(types);
 			var aggStyle = config.inlineStyle ? null : widgetManager.getAggregatedStyleName(types);
 
+			var aggPrefix = config.uriPrefix + "/agg/";
+
+			// s3
+			// aggPrefix = "http://macmms-agg.s3.amazonaws.com/";
+
+
 			var shellFn = getCompiledShellMarkupTemplate();
 			var shellCode = shellFn(
 			{
@@ -376,12 +382,19 @@ require("phnq_log").exec("widget", function(log)
 				extScript: extScriptBuf.join(""),
 				inlineScript: inlineScript,
 				inlineStyle: inlineStyle,
+				aggPrefix: aggPrefix,
 				aggScript: aggScript,
 				aggStyle: aggStyle,
 				widget: this
 			});
 
-			return shellCode;
+			widgetManager.generateAggregateScript(aggScript, {gzip:config.compressJS}, function()
+			{
+				widgetManager.generateAggregateStyle(aggStyle, {gzip:config.compressJS}, function()
+				{
+					fn(shellCode);
+				});
+			});
 		},
 
 		getI18nStrings: function()

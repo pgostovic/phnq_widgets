@@ -56,11 +56,6 @@ require("phnq_log").exec("widget_manager", function(log)
 			}
 		},
 
-		/*
-		*	This method operates asynchronously if a callback function is
-		*	specified, otherwise it returns the widget synchronously, but
-		*	forgoes the scan.
-		*/
 		getWidget: function(type)
 		{
 			this.scan();
@@ -307,7 +302,9 @@ require("phnq_log").exec("widget_manager", function(log)
 				log.debug("generating aggregate file: "+path);
 				_this.createAggDir(function()
 				{
-					fs.writeFile(path, getAggFn.call(_this, types), "UTF-8", function(err)
+					var aggData = getAggFn.call(_this, types);
+
+					fs.writeFile(path, aggData, "UTF-8", function(err)
 					{
 						if(options.gzip)
 						{
@@ -323,6 +320,13 @@ require("phnq_log").exec("widget_manager", function(log)
 						}
 						else
 						{
+							// var s3 = require("./cdn/s3");
+
+							// s3.put(name+ext, aggData, function(err)
+							// {
+							// 	log.debug("DONE: ", err);
+							// 	fn();
+							// });
 							fn();
 						}
 					});

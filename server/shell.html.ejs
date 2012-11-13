@@ -3,7 +3,7 @@
 	<head>
 		<title><%=title%></title>
 		<% if(aggStyle) { %>
-			<link rel="stylesheet" href="<%=prefix%>/agg/<%=aggStyle%>.css" type="text/css" media="screen" charset="utf-8"/>
+			<link rel="stylesheet" href="<%=aggPrefix%><%=aggStyle%>.css" type="text/css" media="screen" charset="utf-8"/>
 		<% } %>
 		<% if(inlineStyle && inlineStyle.match(/\S/)) { %>
 			<style type="text/css">
@@ -20,7 +20,7 @@
 	<script type="text/javascript" src="<%=prefix%>/boot"></script>
 	<%=extScript%>
 	<% if(aggScript) { %>
-		<script type="text/javascript" src="<%=prefix%>/agg/<%=aggScript%>.js"></script>
+		<script type="text/javascript" src="<%=aggPrefix%><%=aggScript%>.js"></script>
 	<% } %>
 	<% if(inlineScript && inlineScript.match(/\S/)) { %>
 		<script type="text/javascript">
