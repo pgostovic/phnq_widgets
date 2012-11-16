@@ -7,6 +7,8 @@ require("phnq_log").exec("widget", function(log)
 	var config = require("./config");
 	var _ = require("underscore");
 	var less = require("less");
+	var aggregator = require("./aggregator");
+	var cdn = require("./cdn");
 
 	var URL_REGEX = /url\(["']?([^)\"']*)["']?\)/g;
 	var EMPTY_TAGS = ["base", "basefont", "br", "col", "frame", "hr", "img", "input", "link", "meta", "param"];
@@ -360,16 +362,34 @@ require("phnq_log").exec("widget", function(log)
 				locale = locale.split(";")[0];
 			}
 
-			var inlineScript = config.inlineScript ? widgetManager.getAggregatedScript(types) : null;
-			var inlineStyle = config.inlineStyle ? widgetManager.getAggregatedStyle(types) : null;
-			var aggScript = config.inlineScript ? null : widgetManager.getAggregatedScriptName(types);
-			var aggStyle = config.inlineStyle ? null : widgetManager.getAggregatedStyleName(types);
+			var scriptAggregator = aggregator.newScriptAggregator();
+			var styleAggregator = aggregator.newStyleAggregator();
 
-			var aggPrefix = config.uriPrefix + "/agg/";
+			styleAggregator.append("widgetshell_head_style");
 
-			// s3
-			// aggPrefix = "http://macmms-agg.s3.amazonaws.com/";
+			_.each(widgetManager.lessKeys, function(lessKey)
+			{
+				styleAggregator.append(lessKey);
+			});
 
+			for(var i=0; i<types.length; i++)
+			{
+				scriptAggregator.append("widget_"+types[i]+"_script");
+				styleAggregator.append("widget_"+types[i]+"_style");
+			}
+
+			var aggScriptUrl, aggStyleUrl;
+
+			if(cdn.getCDN())
+			{
+				aggScriptUrl = cdn.getCDN().getUrlForFile(scriptAggregator.getName()+".js");
+				aggStyleUrl = cdn.getCDN().getUrlForFile(styleAggregator.getName()+".css");
+			}
+			else
+			{
+				aggScriptUrl = config.uriPrefix + "/agg/" + scriptAggregator.getName()+".js";
+				aggStyleUrl = config.uriPrefix + "/agg/" + styleAggregator.getName()+".css";
+			}
 
 			var shellFn = getCompiledShellMarkupTemplate();
 			var shellCode = shellFn(
@@ -380,17 +400,14 @@ require("phnq_log").exec("widget", function(log)
 				body: markup,
 				jQueryCDN: config.jQueryCDN,
 				extScript: extScriptBuf.join(""),
-				inlineScript: inlineScript,
-				inlineStyle: inlineStyle,
-				aggPrefix: aggPrefix,
-				aggScript: aggScript,
-				aggStyle: aggStyle,
+				aggScriptUrl: aggScriptUrl,
+				aggStyleUrl: aggStyleUrl,
 				widget: this
 			});
 
-			widgetManager.generateAggregateScript(aggScript, {gzip:config.compressJS}, function()
+			scriptAggregator.generate(function()
 			{
-				widgetManager.generateAggregateStyle(aggStyle, {gzip:config.compressJS}, function()
+				styleAggregator.generate(function()
 				{
 					fn(shellCode);
 				});

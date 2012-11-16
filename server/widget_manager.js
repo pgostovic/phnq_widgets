@@ -6,9 +6,7 @@ require("phnq_log").exec("widget_manager", function(log)
 	var Widget = require("./widget");
 	var _ = require("underscore");
 	var config = require("./config");
-	var crypto = require("crypto");
-	var less = require("less");
-	var zlib = require("zlib");
+	var aggregator = require("./aggregator");
 
 	var instance = null;
 
@@ -30,15 +28,7 @@ require("phnq_log").exec("widget_manager", function(log)
 			this.widgets = null;
 			this.lastScanMillis = 0;
 			this.watched = {};
-			this.lessFiles = null;
-			this.aggScriptCache = {};
-			this.aggStyleCache = {};
-		},
-
-		getIndex: function()
-		{
-			// TODO: may want to cache this somehow.
-			return _.keys(this.widgets).sort();
+			this.lessKeys = null;
 		},
 
 		addScanPath: function(path)
@@ -60,278 +50,6 @@ require("phnq_log").exec("widget_manager", function(log)
 		{
 			this.scan();
 			return this.widgets[type];
-		},
-
-		processScript: function(script)
-		{
-			log.debug("Processing script... (this should not get called very often -- result should be cached)");
-			if(config.minifyJS)
-			{
-				log.debug("Minifying JS...");
-				log.startTimer();
-
-				var len1 = script.length;
-				var jsp = require("uglify-js").parser;
-				var pro = require("uglify-js").uglify;
-
-				var ast = jsp.parse(script); // parse code and get the initial AST
-				ast = pro.ast_mangle(ast); // get a new AST with mangled names
-				ast = pro.ast_squeeze(ast); // get an AST with compression optimizations
-				script = pro.gen_code(ast); // compressed code here
-
-				var len2 = script.length;
-				var percentReduc = Math.round(1000*(len1-len2)/len1)/10;
-
-				log.debug("Minified script: "+len1+"bytes to "+len2+" bytes ("+percentReduc+"%)");
-			}
-
-			log.debug("Done processing script.");
-			return script;
-		},
-
-		processStyle: function(style)
-		{
-			log.debug("Processing style... (this should not get called very often -- result should be cached)");
-
-			log.startTimer();
-
-			var parser = new(less.Parser);
-			parser.parse(style, function(err, tree)
-			{
-				if(err)
-				{
-					log.error("unable to less\'ify style: ", err.message);
-				}
-				else
-				{
-					style = tree.toCSS({ yuicompress: config.minifyCSS });
-				}
-			});
-			log.debug("Done processing style.");
-			return style;
-		},
-
-		getAggregatedScriptName: function(types)
-		{
-			types.sort();
-
-			var index = this.getIndex();
-			var typesBitset = new phnq_core.BitSet();
-			for(var i=0; i<types.length; i++)
-			{
-				if(!types[i].match(/^https?:/))
-				{
-					var widget = this.getWidget(types[i]);
-					typesBitset.set(_.indexOf(index, types[i]));
-				}
-			}
-			var hash = crypto.createHash("md5");
-			var script = this.getAggregatedScript(types);
-			hash.update(script, "UTF-8");
-			return typesBitset.toArray().join("_") + "_" + hash.digest("hex");
-		},
-
-		getAggregatedStyleName: function(types)
-		{
-			types.sort();
-
-			var index = this.getIndex();
-			var typesBitset = new phnq_core.BitSet();
-			for(var i=0; i<types.length; i++)
-			{
-				if(!types[i].match(/^https?:/))
-				{
-					var widget = this.getWidget(types[i]);
-					typesBitset.set(_.indexOf(index, types[i]));
-				}
-			}
-			var hash = crypto.createHash("md5");
-			var style = this.getAggregatedStyle(types);
-			hash.update(style, "UTF-8");
-			return typesBitset.toArray().join("_") + "_" + hash.digest("hex");
-		},
-
-		getAggregatedScript: function(types)
-		{
-			var key = types.sort().join(",");
-			var script = this.aggScriptCache[key];
-			if(!script)
-			{
-				script = this.aggScriptCache[key] = this.processScript(this.getAggregate(types, "script"));
-			}
-			return script;
-		},
-
-		getAggregatedStyle: function(types)
-		{
-			var key = types.sort().join(",");
-			var style = this.aggStyleCache[key];
-			if(!style)
-			{
-				var buf = [];
-				_.each(this.lessFiles, function(lessFile)
-				{
-					buf.push(fs.readFileSync(lessFile, "UTF-8"));
-				});
-				buf.push(this.getAggregate(types, "style"));
-				style = this.aggStyleCache[key] = this.processStyle(buf.join(""));
-			}
-			return style;
-		},
-
-		getAggregate: function(types, format)
-		{
-			var buf = [];
-
-			if(format == "style")
-			{
-				buf.push(".wph {visibility: hidden; width: 1px}\n");
-				buf.push(".loadError { padding: 5px; margin: 5px; background: #c00; color: #fff; }\n");
-			}
-
-			var typesLen = types.length;
-			for(var i=0; i<typesLen; i++)
-			{
-				var type = types[i];
-				if(!type.match(/^https?:/))
-				{
-					try
-					{
-						var widget = this.getWidget(type);
-						if(format == "script")
-							buf.push(widget.getScript());
-						else if(format == "style")
-							buf.push(widget.getStyle());
-					}
-					catch(ex)
-					{
-						log.error("Error aggregating script dependency: ", type);
-					}
-				}
-			}
-			return buf.join("");
-		},
-
-		clearAggDir: function()
-		{
-			var aggDir = _path.join(module.exports.appRoot, "/agg/");
-			if(fs.existsSync(aggDir))
-			{
-				var names = fs.readdirSync(aggDir);
-				_.each(names, function(name)
-				{
-					var aggFilePath = _path.join(aggDir, name);
-					log.debug("Clearing agg file: ", aggFilePath);
-					fs.unlinkSync(aggFilePath);
-				});
-			}
-		},
-
-		createAggDir: function(fn)
-		{
-			var aggDir = _path.join(module.exports.appRoot, "/agg/");
-
-			fs.exists(aggDir, function(exists)
-			{
-				if(exists)
-					return fn();
-
-				log.debug("Creating agg dir: ", aggDir);
-				fs.mkdir(aggDir, function()
-				{
-					fn();
-				});
-			});
-		},
-
-		generateAggregateScript: function(name, options, fn)
-		{
-			options.script = true;
-			this.generateAggregate(name, options, fn);
-		},
-
-		generateAggregateStyle: function(name, options, fn)
-		{
-			options.style = true;
-			this.generateAggregate(name, options, fn);
-		},
-
-		generateAggregate: function(name, options, fn)
-		{
-			var _this = this;
-
-			options = options || {};
-			options.gzip = !!options.gzip;
-			options.style = !!options.style;
-			options.script = !!options.script;
-
-			var ext;
-			var getAggFn;
-			if(options.style)
-			{
-				ext = ".css";
-				getAggFn = this.getAggregatedStyle;
-			}
-			else if(options.script)
-			{
-				ext = ".js";
-				getAggFn = this.getAggregatedScript;
-			}
-			else
-			{
-				throw "Either teh style or script option must be set to true.";
-			}
-
-			var path = _path.join(module.exports.appRoot, "/agg/"+name+ext);
-			fs.exists(path+(options.gzip?".gzip":""), function(exists)
-			{
-				if(exists)
-					return fn();
-
-				var index = _this.getIndex();
-				var comps = name.split("_");
-				comps.pop();
-				var typesBitset = new phnq_core.BitSet(comps);
-				var types = [];
-				for(var i=0; i<index.length; i++)
-				{
-					if(typesBitset.isSet(i))
-						types.push(index[i]);
-				}
-
-				log.debug("generating aggregate file: "+path);
-				_this.createAggDir(function()
-				{
-					var aggData = getAggFn.call(_this, types);
-
-					fs.writeFile(path, aggData, "UTF-8", function(err)
-					{
-						if(options.gzip)
-						{
-							log.debug("compressing aggregate file: "+path);
-							var gzip = zlib.createGzip();
-							var inp = fs.createReadStream(path);
-							var out = fs.createWriteStream(path + ".gzip");
-							out.on("close", function()
-							{
-								fn();
-							});
-							inp.pipe(gzip).pipe(out);
-						}
-						else
-						{
-							// var s3 = require("./cdn/s3");
-
-							// s3.put(name+ext, aggData, function(err)
-							// {
-							// 	log.debug("DONE: ", err);
-							// 	fn();
-							// });
-							fn();
-						}
-					});
-				});
-			});
 		},
 
 		watch: function(path)
@@ -378,9 +96,7 @@ require("phnq_log").exec("widget_manager", function(log)
 			var _this = this;
 
 			this.widgets = {};
-			this.lessFiles = [];
-			this.aggScriptCache = {};
-			this.aggStyleCache = {};
+			this.lessKeys = [];
 
 			var paths = this.scanPaths.slice(0).reverse();
 			paths.push(_path.join(__dirname, "../widgets"));
@@ -390,6 +106,24 @@ require("phnq_log").exec("widget_manager", function(log)
 			{
 				_this.addWidgetsAtPath(path, path);
 			});
+
+			aggregator.clear();
+			
+			_.each(this.widgets, function(widget, type)
+			{
+				var script = widget.getScript();
+				if(script)
+					aggregator.registerString("widget_"+type+"_script", script);
+
+				var style = widget.getStyle();
+				if(style)
+					aggregator.registerString("widget_"+type+"_style", style);
+			});
+
+			var buf = [];
+			buf.push(".wph {visibility: hidden; width: 1px}\n");
+			buf.push(".loadError { padding: 5px; margin: 5px; background: #c00; color: #fff; }\n");
+			aggregator.registerString("widgetshell_head_style", buf.join(""));
 		},
 
 		addWidgetsAtPath: function(path, basePath)
@@ -416,7 +150,9 @@ require("phnq_log").exec("widget_manager", function(log)
 				{
 					if(name.match(/.*\.less$/))
 					{
-						_this.lessFiles.push(f);
+						var lessKey = "less_"+_path.relative(basePath, f);
+						aggregator.registerString(lessKey, fs.readFileSync(f, "UTF-8"));
+						_this.lessKeys.push(lessKey);
 					}
 					else
 					{

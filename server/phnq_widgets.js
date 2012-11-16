@@ -8,6 +8,7 @@ require("phnq_log").exec("phnq_widgets", function(log)
 	var _path = require("path");
 	var phnq_core = require("phnq_core");
 	var config = require("./config");
+	var aggregator = require("./aggregator");
 	var Context = require("./context");
 
 	var phnq_widgets = module.exports =
@@ -35,13 +36,13 @@ require("phnq_log").exec("phnq_widgets", function(log)
 				app.use(phnq_widgets.widgetRenderer());
 			}
 
-			appRoot = options.appRoot || _path.dirname(process.argv[1]);
+			appRoot = this.appRoot = options.appRoot || _path.dirname(process.argv[1]);
 			require("./widget_manager").appRoot = appRoot;
 			widgetManager = require("./widget_manager").instance();
 
 			setRoutes();
 
-			widgetManager.clearAggDir();
+			aggregator.clearAggDir();
 		},
 
 		getApp: function()
@@ -182,33 +183,37 @@ require("phnq_log").exec("phnq_widgets", function(log)
 
 		app.get(config.uriPrefix+"/agg/:aggFile.js", function(req, res)
 		{
-			var ext = config.compressJS ? ".js.gzip" : ".js";
-			var path = _path.join(appRoot, "/agg/"+req.params.aggFile+ext);
+			var scriptAgg = aggregator.newScriptAggregator(req.params.aggFile);
 
-			widgetManager.generateAggregateScript(req.params.aggFile, {gzip:config.compressJS}, function()
+			scriptAgg.generate(function()
 			{
 				res.type("js");
 
-				if(config.compressCSS)
+				var ext = ".js";
+				if(config.compressJS)
+				{
 					res.header("Content-Encoding", "gzip");
-
-				res.sendfile(path);
+					ext += ".gzip";
+				}
+				res.sendfile(_path.join(appRoot, "/agg/"+req.params.aggFile+ext));
 			});
 		});
 
 		app.get(config.uriPrefix+"/agg/:aggFile.css", function(req, res)
 		{
-			var ext = config.compressCSS ? ".css.gzip" : ".css";
-			var path = _path.join(appRoot, "/agg/"+req.params.aggFile+ext);
+			var styleAgg = aggregator.newStyleAggregator(req.params.aggFile);
 
-			widgetManager.generateAggregateStyle(req.params.aggFile, {gzip:config.compressCSS}, function()
+			styleAgg.generate(function()
 			{
 				res.type("css");
 
+				var ext = ".css";
 				if(config.compressCSS)
+				{
 					res.header("Content-Encoding", "gzip");
-
-				res.sendfile(path);
+					ext += ".gzip";
+				}
+				res.sendfile(_path.join(appRoot, "/agg/"+req.params.aggFile+ext));
 			});
 		});
 
@@ -306,6 +311,7 @@ require("phnq_log").exec("phnq_widgets", function(log)
 		buf.push(JSON.stringify(phnq_widgets.config));
 		buf.push(";");
 
-		return clientBoot = widgetManager.processScript(buf.join(""));
+		// return clientBoot = widgetManager.processScript(buf.join(""));
+		return clientBoot = buf.join("");
 	};
 });

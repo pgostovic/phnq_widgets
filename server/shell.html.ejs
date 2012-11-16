@@ -2,14 +2,7 @@
 <html lang="<%=lang%>">
 	<head>
 		<title><%=title%></title>
-		<% if(aggStyle) { %>
-			<link rel="stylesheet" href="<%=aggPrefix%><%=aggStyle%>.css" type="text/css" media="screen" charset="utf-8"/>
-		<% } %>
-		<% if(inlineStyle && inlineStyle.match(/\S/)) { %>
-			<style type="text/css">
-				<%=inlineStyle%>
-			</style>
-		<% } %>
+		<link rel="stylesheet" href="<%=aggStyleUrl%>" type="text/css" media="screen" charset="utf-8"/>
 	</head>
 	<% if(widget.rootTagName != "body") { %><body><% } %>
 		<%=body%>
@@ -19,12 +12,5 @@
 	<% } %>
 	<script type="text/javascript" src="<%=prefix%>/boot"></script>
 	<%=extScript%>
-	<% if(aggScript) { %>
-		<script type="text/javascript" src="<%=aggPrefix%><%=aggScript%>.js"></script>
-	<% } %>
-	<% if(inlineScript && inlineScript.match(/\S/)) { %>
-		<script type="text/javascript">
-			<%=inlineScript%>
-		</script>
-	<% } %>
+	<script type="text/javascript" src="<%=aggScriptUrl%>"></script>
 </html>

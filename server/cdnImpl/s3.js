@@ -1,17 +1,9 @@
 var awssum = require('awssum');
 var amazon = awssum.load('amazon/amazon');
 var S3 = awssum.load('amazon/s3').S3;
-var config = require("../config");
+var config = require("../config").cdn.s3;
 var mime = require('mime');
 var log = require("phnq_log").create(__filename);
-
-
-
-config.s3AccessKeyId = "AKIAJTGZE3BFFEVPD7LA";
-config.s3SecretAccessKey = "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";
-config.s3BucketName = "macmms-agg";
-
-
 
 var s3 = null;
 var getS3 = function()
@@ -20,9 +12,9 @@ var getS3 = function()
 	{
 		s3 = new S3(
 		{
-			"accessKeyId": config.s3AccessKeyId,
-			"secretAccessKey": config.s3SecretAccessKey,
-			"region": config.s3Region || amazon.US_EAST_1
+			"accessKeyId": config.accessKeyId,
+			"secretAccessKey": config.secretAccessKey,
+			"region": config.region || amazon.US_EAST_1
 		});
 	}
 	return s3;
@@ -34,7 +26,7 @@ module.exports =
 	{
 		getS3().PutObject(
 		{
-			BucketName: config.s3BucketName,
+			BucketName: config.bucketName,
 			ObjectName: filename,
 			ContentLength: filedata.length,
 			ContentType: mime.lookup(filename),
@@ -47,12 +39,10 @@ module.exports =
 
 			fn(null);
 		});
+	},
+
+	getUrlForFile: function(file)
+	{
+		return "http://"+config.bucketName+".s3.amazonaws.com/"+file;
 	}
 };
-
-
-
-
-
-
-
