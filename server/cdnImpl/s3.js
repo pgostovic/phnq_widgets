@@ -24,14 +24,16 @@ module.exports =
 {
 	put: function(filename, filedata, fn)
 	{
+		var dataBuf = new Buffer(filedata, "UTF-8");
+
 		getS3().PutObject(
 		{
 			BucketName: config.bucketName,
 			ObjectName: filename,
-			ContentLength: filedata.length,
+			ContentLength: dataBuf.length,
 			ContentType: mime.lookup(filename),
 	        Acl: "public-read",
-			Body: filedata
+			Body: dataBuf
 		}, function(err)
 		{
 			if(err)
