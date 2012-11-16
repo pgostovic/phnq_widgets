@@ -97,7 +97,8 @@ require("phnq_log").exec("widget_manager", function(log)
 
 			this.widgets = {};
 			this.lessKeys = [];
-
+			aggregator.clear();
+			
 			var paths = this.scanPaths.slice(0).reverse();
 			paths.push(_path.join(__dirname, "../widgets"));
 			paths = _.uniq(paths); // in case we're running app.js in this package
@@ -107,8 +108,6 @@ require("phnq_log").exec("widget_manager", function(log)
 				_this.addWidgetsAtPath(path, path);
 			});
 
-			aggregator.clear();
-			
 			_.each(this.widgets, function(widget, type)
 			{
 				var script = widget.getScript();
