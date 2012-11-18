@@ -66,7 +66,7 @@ module.exports =
 
 	clearAggDir: function()
 	{
-		var aggDir = path.join(require("./phnq_widgets").appRoot, "/agg/");
+		var aggDir = path.join(require("./phnq_widgets").appRoot, "static", "agg");
 
 		if(fs.existsSync(aggDir))
 		{
@@ -81,19 +81,39 @@ module.exports =
 	}
 };
 
-var createAggDir = function(fn)
+var createStaticDir = function(fn)
 {
-	var aggDir = path.join(require("./phnq_widgets").appRoot, "/agg/");
+	var dir = path.join(require("./phnq_widgets").appRoot, "static");
 
-	fs.exists(aggDir, function(exists)
+	fs.exists(dir, function(exists)
 	{
 		if(exists)
 			return fn();
 
-		log.debug("Creating agg dir: ", aggDir);
-		fs.mkdir(aggDir, function()
+		fs.mkdir(dir, function(err)
 		{
+			if(err) throw err;
 			fn();
+		});
+	});
+};
+
+var createAggDir = function(fn)
+{
+	createStaticDir(function()
+	{
+		var aggDir = path.join(require("./phnq_widgets").appRoot, "static/agg");
+
+		fs.exists(aggDir, function(exists)
+		{
+			if(exists)
+				return fn();
+
+			fs.mkdir(aggDir, function(err)
+			{
+				if(err) throw err;
+				fn();
+			});
 		});
 	});
 };
@@ -180,7 +200,7 @@ var Aggregator = phnq_core.clazz(
 	{
 		var _this = this;
 
-		var file = path.join(require("./phnq_widgets").appRoot, "agg", this.getName()+"."+this.ext);
+		var file = path.join(require("./phnq_widgets").appRoot, "static", "agg", this.getName()+"."+this.ext);
 
 		var ensureExists = function(fn2)
 		{

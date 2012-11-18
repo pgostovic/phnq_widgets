@@ -195,7 +195,7 @@ require("phnq_log").exec("phnq_widgets", function(log)
 					res.header("Content-Encoding", "gzip");
 					ext += ".gzip";
 				}
-				res.sendfile(_path.join(appRoot, "/agg/"+req.params.aggFile+ext));
+				res.sendfile(_path.join(appRoot, "static", "agg", req.params.aggFile+ext));
 			});
 		});
 
@@ -213,7 +213,7 @@ require("phnq_log").exec("phnq_widgets", function(log)
 					res.header("Content-Encoding", "gzip");
 					ext += ".gzip";
 				}
-				res.sendfile(_path.join(appRoot, "/agg/"+req.params.aggFile+ext));
+				res.sendfile(_path.join(appRoot, "static", "agg", req.params.aggFile+ext));
 			});
 		});
 
