@@ -363,8 +363,9 @@ require("phnq_log").exec("widget", function(log)
 			}
 
 			var scriptAggregator = aggregator.newScriptAggregator();
-			var styleAggregator = aggregator.newStyleAggregator();
+			scriptAggregator.append("client_boot");
 
+			var styleAggregator = aggregator.newStyleAggregator();
 			styleAggregator.append("widgetshell_head_style");
 
 			_.each(widgetManager.lessKeys, function(lessKey)

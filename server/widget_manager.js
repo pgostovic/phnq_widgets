@@ -123,6 +123,8 @@ require("phnq_log").exec("widget_manager", function(log)
 			buf.push(".wph {visibility: hidden; width: 1px}\n");
 			buf.push(".loadError { padding: 5px; margin: 5px; background: #c00; color: #fff; }\n");
 			aggregator.registerString("widgetshell_head_style", buf.join(""));
+
+			aggregator.registerString("client_boot", aggregator.getClientBoot(true));
 		},
 
 		addWidgetsAtPath: function(path, basePath)

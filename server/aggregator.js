@@ -25,6 +25,11 @@ var getStringKeys = function()
 
 module.exports =
 {
+	getClientBoot: function(refresh)
+	{
+		return getClientBoot(refresh);
+	},
+
 	newStyleAggregator: function(name)
 	{
 		return new StyleAggregator(name);
@@ -335,3 +340,44 @@ var StyleAggregator = Aggregator.extend(
 		return style;
 	}
 });
+
+var clientBoot = null;
+var getClientBoot = function(refresh)
+{
+	if(clientBoot && !refresh)
+		return clientBoot;
+
+	var bootFiles =
+	[
+		"../client/json2.js",
+		"phnq_core",
+		"phnq_log",
+		"../client/widgets.js",
+		"../client/context.js"
+	];
+
+	if(!config.jQueryCDN)
+		bootFiles.splice(0, 0, "../client/jquery-1.8.2.js");
+
+	var buf = [];
+	for(var i=0; i<bootFiles.length; i++)
+	{
+		var filename;
+		try
+		{
+			filename = require(bootFiles[i]).getFileName();
+		}
+		catch(ex)
+		{
+			filename = path.resolve(__dirname, bootFiles[i]);
+		}
+		if(filename)
+			buf.push(fs.readFileSync(filename, "UTF-8"));
+	}
+
+	buf.push("phnq_widgets.config = ");
+	buf.push(JSON.stringify(require("./phnq_widgets").config));
+	buf.push(";");
+
+	return clientBoot = buf.join("");
+};
