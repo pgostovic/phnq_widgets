@@ -41,7 +41,7 @@ module.exports =
 
 		_.each(require("./widget_manager").instance().widgets, function(widget, type)
 		{
-			staticRoots.push({base:path.join(widget.dir, "_static"), prefix:"widgets/"+type+"/"});
+			staticRoots.push({base:path.join(widget.dir, "_static"), prefix:"widgets/"+type+"/static/"});
 		});
 
 		var syncNext = function()
