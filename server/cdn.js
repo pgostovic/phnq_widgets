@@ -99,8 +99,6 @@ var syncTree = function(folder, base, prefix, fn)
 				{
 					var objName = prefix+path.relative(base, f);
 
-					log.debug("pushing to CDN: ", objName);
-
 					fs.readFile(f, function(err, data)
 					{
 						var cdn = module.exports.getCDN();
