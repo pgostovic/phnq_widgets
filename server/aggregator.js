@@ -69,17 +69,41 @@ module.exports =
 		stringKeys = null;
 	},
 
-	clearAggDir: function()
+	pruneAggDir: function()
 	{
 		var aggDir = path.join(require("./phnq_widgets").appRoot, "static", "agg");
 
 		if(fs.existsSync(aggDir))
 		{
 			var names = fs.readdirSync(aggDir);
+			var atimes = {};
 			_.each(names, function(name)
 			{
+				var stat = fs.statSync(path.join(aggDir, name));
+				atimes[name] = stat.atime;
+			});
+
+			// Sort by last access time, most to least recent...
+			names.sort(function(n1, n2)
+			{
+				var a1 = atimes[n1];
+				var a2 = atimes[n2];
+
+				if(a1 == a2)
+					return 0;
+				else if(a1 < a2)
+					return 1;
+				else
+					return -1;
+			});
+
+			// Get all but the 20 most recently accessed...
+			var toRm = names.splice(20);
+
+			_.each(toRm, function(name)
+			{
 				var aggFilePath = path.join(aggDir, name);
-				log.debug("Clearing agg file: ", aggFilePath);
+				log.debug("Clearing agg file: ", aggFilePath, atimes[name]);
 				fs.unlinkSync(aggFilePath);
 			});
 		}

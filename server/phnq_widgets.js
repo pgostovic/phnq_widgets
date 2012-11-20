@@ -42,7 +42,7 @@ require("phnq_log").exec("phnq_widgets", function(log)
 
 			setRoutes();
 
-			aggregator.clearAggDir();
+			aggregator.pruneAggDir();
 		},
 
 		getApp: function()
