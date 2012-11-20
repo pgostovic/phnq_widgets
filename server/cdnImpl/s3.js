@@ -26,12 +26,22 @@ module.exports =
 	{
 		var dataBuf = new Buffer(filedata, "UTF-8");
 
+		var contentType = mime.lookup(filename);
+		var contentEnc = undefined;
+		if(filename.match(/\.gz$/))
+		{
+			contentType = mime.lookup(filename.replace(/\.gz$/, ""));
+			contentEnc = "gzip";
+		}
+
 		getS3().PutObject(
 		{
 			BucketName: config.bucketName,
 			ObjectName: filename,
 			ContentLength: dataBuf.length,
-			ContentType: mime.lookup(filename),
+			ContentType: contentType,
+			ContentEncoding: contentEnc,
+			CacheControl: "public, max-age=315360000",
 	        Acl: "public-read",
 			Body: dataBuf
 		}, function(err)

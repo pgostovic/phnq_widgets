@@ -2,6 +2,7 @@ require("phnq_log").exec("widget_manager", function(log)
 {
 	var phnq_core = require("phnq_core");
 	var fs = require("fs");
+	var cdn = require("./cdn");
 	var _path = require("path");
 	var Widget = require("./widget");
 	var _ = require("underscore");
@@ -98,6 +99,7 @@ require("phnq_log").exec("widget_manager", function(log)
 			this.widgets = {};
 			this.lessKeys = [];
 			aggregator.clear();
+			cdn.needsSync = true;
 			
 			var paths = this.scanPaths.slice(0).reverse();
 			paths.push(_path.join(__dirname, "../widgets"));

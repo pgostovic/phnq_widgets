@@ -383,14 +383,20 @@ require("phnq_log").exec("widget", function(log)
 
 			if(cdn.getCDN())
 			{
-				aggScriptUrl = cdn.getCDN().getUrlForFile(scriptAggregator.getName()+".js");
-				aggStyleUrl = cdn.getCDN().getUrlForFile(styleAggregator.getName()+".css");
+				aggScriptUrl = cdn.getCDN().getUrlForFile("agg/"+scriptAggregator.getName()+".js");
+				aggStyleUrl = cdn.getCDN().getUrlForFile("agg/"+styleAggregator.getName()+".css");
 			}
 			else
 			{
 				aggScriptUrl = config.uriPrefix + "/agg/" + scriptAggregator.getName()+".js";
 				aggStyleUrl = config.uriPrefix + "/agg/" + styleAggregator.getName()+".css";
 			}
+
+			if(config.compressJS)
+				aggScriptUrl += ".gz";
+
+			if(config.compressCSS)
+				aggStyleUrl += ".gz";
 
 			var shellFn = getCompiledShellMarkupTemplate();
 			var shellCode = shellFn(
@@ -410,7 +416,10 @@ require("phnq_log").exec("widget", function(log)
 			{
 				styleAggregator.generate(function()
 				{
-					fn(shellCode);
+					cdn.sync(function()
+					{
+						fn(shellCode);
+					});
 				});
 			});
 		},

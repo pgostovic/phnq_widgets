@@ -223,17 +223,7 @@ var Aggregator = phnq_core.clazz(
 						if(err)
 							throw err;
 
-						if(cdn.getCDN())
-						{
-							cdn.getCDN().put(path.basename(file), agg, function()
-							{
-								fn2();
-							});
-						}
-						else
-						{
-							fn2();
-						}
+						fn2();
 					});
 				});
 			});
@@ -243,7 +233,7 @@ var Aggregator = phnq_core.clazz(
 		{
 			if(_this.shouldCompress())
 			{
-				var gzipFile = file + ".gzip";
+				var gzipFile = file + ".gz";
 				fs.exists(gzipFile, function(exists)
 				{
 					if(exists)
@@ -254,8 +244,6 @@ var Aggregator = phnq_core.clazz(
 					var out = fs.createWriteStream(gzipFile);
 					out.on("close", function()
 					{
-						// TODO CDN push...
-
 						fn();
 					});
 					inp.pipe(gzip).pipe(out);

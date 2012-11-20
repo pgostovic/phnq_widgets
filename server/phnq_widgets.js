@@ -184,36 +184,42 @@ require("phnq_log").exec("phnq_widgets", function(log)
 		app.get(config.uriPrefix+"/agg/:aggFile.js", function(req, res)
 		{
 			var scriptAgg = aggregator.newScriptAggregator(req.params.aggFile);
-
 			scriptAgg.generate(function()
 			{
 				res.type("js");
+				res.sendfile(_path.join(appRoot, "static", "agg", req.params.aggFile+".js"));
+			});
+		});
 
-				var ext = ".js";
-				if(config.compressJS)
-				{
-					res.header("Content-Encoding", "gzip");
-					ext += ".gzip";
-				}
-				res.sendfile(_path.join(appRoot, "static", "agg", req.params.aggFile+ext));
+		app.get(config.uriPrefix+"/agg/:aggFile.js.gz", function(req, res)
+		{
+			var scriptAgg = aggregator.newScriptAggregator(req.params.aggFile);
+			scriptAgg.generate(function()
+			{
+				res.type("js");
+				res.header("Content-Encoding", "gzip");
+				res.sendfile(_path.join(appRoot, "static", "agg", req.params.aggFile+".js.gz"));
 			});
 		});
 
 		app.get(config.uriPrefix+"/agg/:aggFile.css", function(req, res)
 		{
 			var styleAgg = aggregator.newStyleAggregator(req.params.aggFile);
-
 			styleAgg.generate(function()
 			{
 				res.type("css");
+				res.sendfile(_path.join(appRoot, "static", "agg", req.params.aggFile+".css"));
+			});
+		});
 
-				var ext = ".css";
-				if(config.compressCSS)
-				{
-					res.header("Content-Encoding", "gzip");
-					ext += ".gzip";
-				}
-				res.sendfile(_path.join(appRoot, "static", "agg", req.params.aggFile+ext));
+		app.get(config.uriPrefix+"/agg/:aggFile.css.gz", function(req, res)
+		{
+			var styleAgg = aggregator.newStyleAggregator(req.params.aggFile);
+			styleAgg.generate(function()
+			{
+				res.type("css");
+				res.header("Content-Encoding", "gzip");
+				res.sendfile(_path.join(appRoot, "static", "agg", req.params.aggFile+".css.gz"));
 			});
 		});
 
