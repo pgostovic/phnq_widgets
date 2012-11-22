@@ -158,6 +158,7 @@ var Aggregator = phnq_core.clazz(
 
 		if(name)
 		{
+			require("./widget_manager").instance().scan();
 			var comps = name.split("_");
 			comps.pop();
 			var bitset = new phnq_core.BitSet(comps);
