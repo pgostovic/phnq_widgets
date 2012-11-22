@@ -241,12 +241,16 @@ var Aggregator = phnq_core.clazz(
 					if(exists)
 						return fn2();
 
+					log.startTimer();
+
 					var agg = _this.getAggregate();
 
 					fs.writeFile(file, agg, "UTF-8", function(err)
 					{
 						if(err)
 							throw err;
+
+						log.debug("generated aggregate: ", path.relative(require("./phnq_widgets").appRoot, file));
 
 						fn2();
 					});
@@ -264,12 +268,22 @@ var Aggregator = phnq_core.clazz(
 					if(exists)
 						return fn();
 
+					log.startTimer();
+
 					var gzip = zlib.createGzip();
 					var inp = fs.createReadStream(file);
 					var out = fs.createWriteStream(gzipFile);
 					out.on("close", function()
 					{
-						fn();
+						fs.stat(file, function(err, stat)
+						{
+							fs.stat(gzipFile, function(err, gzipStat)
+							{
+								var percReduc = Math.round(1000*(stat.size-gzipStat.size)/stat.size)/10;
+								log.debug("gzip'd "+stat.size+"->"+gzipStat.size+" bytes ("+percReduc+"% reduction): ", path.relative(require("./phnq_widgets").appRoot, gzipFile));
+								fn();
+							});
+						});
 					});
 					inp.pipe(gzip).pipe(out);
 				});
@@ -298,7 +312,6 @@ var ScriptAggregator = Aggregator.extend(
 	{
 		if(config.minifyJS)
 		{
-			log.debug("Minifying JS...");
 			log.startTimer();
 
 			var len1 = script.length;
@@ -313,7 +326,7 @@ var ScriptAggregator = Aggregator.extend(
 			var len2 = script.length;
 			var percentReduc = Math.round(1000*(len1-len2)/len1)/10;
 
-			log.debug("Minified script: "+len1+"bytes to "+len2+" bytes ("+percentReduc+"%)");
+			log.debug("minified script: "+len1+"->"+len2+" bytes ("+percentReduc+"%)");
 		}
 
 		return script;
@@ -334,6 +347,7 @@ var StyleAggregator = Aggregator.extend(
 
 	process: function(style)
 	{
+		var origStyle = style;
 		log.startTimer();
 		var parser = new(less.Parser);
 		parser.parse(style, function(err, tree)
@@ -348,8 +362,17 @@ var StyleAggregator = Aggregator.extend(
 			}
 		});
 
-		log.debug("Done processing style.");
-
+		if(config.minifyCSS)
+		{
+			var len1 = origStyle.length;
+			var len2 = style.length;
+			var percentReduc = Math.round(1000*(len1-len2)/len1)/10;
+			log.debug("less\'ified and minified style: "+len1+"->"+len2+" bytes ("+percentReduc+"%)");
+		}
+		else
+		{
+			log.debug("less\'ified style");
+		}
 		return style;
 	}
 });
