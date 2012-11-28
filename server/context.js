@@ -79,16 +79,10 @@ module.exports = phnq_core.clazz(
 		{
 			this.embedded.push(type);
 			var widget = widgetManager.getWidget(type);
-			var compiledMarkup = widget.getCompiledMarkup();
-			if(compiledMarkup)
-			{
-				var markupFn = eval(compiledMarkup);
-				markup = markupFn(this);
-			}
-			else
-			{
+			markup = widget.getMarkup(this);
+			if(!markup)
 				markup = "";
-			}
+
 			this.embedded.pop();
 		}
 

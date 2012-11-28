@@ -104,6 +104,28 @@ module.exports = phnq_core.clazz(
 		return this.style;
 	},
 
+	getMarkup: function(context)
+	{
+		var markupFn = this.getCompiledMarkupFn();
+		return markupFn ? markupFn(context) : null;
+	},
+
+	getCompiledMarkupFn: function()
+	{
+		if(this.compiledMarkupFn === undefined)
+		{
+			if(this.getCompiledMarkup())
+			{
+				this.compiledMarkupFn = eval(this.getCompiledMarkup());
+			}
+			else
+			{
+				this.compiledMarkupFn = null;
+			}
+		}
+		return this.compiledMarkupFn;
+	},
+
 	getCompiledMarkup: function()
 	{
 		if(this.compiledMarkup === undefined)
@@ -321,17 +343,9 @@ module.exports = phnq_core.clazz(
 		var widgetManager = require("./widget_manager").instance();
 
 		// Get Markup -- includes dependencies
-		var markupObjCode = this.getCompiledMarkup();
-		var markup;
-		if(markupObjCode)
-		{
-			var markupFn = eval(markupObjCode);
-			markup = markupFn(context);
-		}
-		else
-		{
+		var markup = this.getMarkup(context);
+		if(!markup)
 			markup = "<h1 style=\"font-family:sans-serif\">no markup: "+this.type+"</h1>";
-		}
 
 		var types = this.getDependencies();
 		types.push(this.type);

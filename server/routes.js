@@ -4,6 +4,7 @@ var _fs = require("fs");
 var _path = require("path");
 var config = require("./config");
 var aggregator = require("./aggregator");
+var perf = require("./perf");
 
 exports.init = function(app, appRoot)
 {
