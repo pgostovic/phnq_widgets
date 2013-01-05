@@ -4,6 +4,19 @@ var program = require("commander");
 var pkg = require("../package.json");
 var path = require("path");
 var fs = require("fs");
+var config = null;
+
+try
+{
+	config = require(path.join(process.cwd(), "config"));
+	config.appRoot = config.appRoot || "";
+}
+catch(ex)
+{
+	config = {appRoot: ""};
+}
+
+var appRoot = path.join(process.cwd(), config.appRoot);
 
 program
   .version(pkg.version)
@@ -23,7 +36,7 @@ if(program.generate)
 		var comps = name.split(".");
 		comps.splice(0, 0, "widgets");
 
-		var dir = process.cwd();
+		var dir = appRoot;
 		while(comps.length > 0)
 		{
 			var comp = comps[0];
