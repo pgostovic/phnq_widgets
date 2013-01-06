@@ -71,6 +71,26 @@ var phnq_widgets = module.exports =
 		});
 	},
 
+	renderWidgetAsEmail: function(type, context, locale, fn)
+	{
+		var widget = require("./widget_manager").instance().getWidget(type);
+		if(!widget)
+			return fn(null);
+
+		phnq_core.extend(context, new Context(widget));
+
+		var subject = "";
+		context.subject = function(subj)
+		{
+			subject = subj;
+		};
+
+		widget.getEmailMarkup(context, locale, function(code)
+		{
+			fn(subject, code);
+		});
+	},
+
 	getTestCode: function(options)
 	{
 		var baseUrl = options.baseUrl + config.uriPrefix + "/";

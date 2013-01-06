@@ -337,6 +337,50 @@ module.exports = phnq_core.clazz(
 		return attrValue;
 	},
 
+	getEmailMarkup: function(context, locale, fn)
+	{
+		var widgetManager = require("./widget_manager").instance();
+
+		// Get Markup -- includes dependencies
+		var markup = this.getMarkup(context);
+		if(!markup)
+			markup = "<h1 style=\"font-family:sans-serif\">no markup: "+this.type+"</h1>";
+
+		var types = this.getDependencies();
+		types.push(this.type);
+		_.each(context.embedded, function(type)
+		{
+			types.push(type);
+		});
+		types = _.uniq(types);
+
+		var styleAggregator = aggregator.newStyleAggregator();
+		styleAggregator.append("widgetshell_head_style");
+
+		_.each(widgetManager.lessKeys, function(lessKey)
+		{
+			styleAggregator.append(lessKey);
+		});
+
+		for(var i=0; i<types.length; i++)
+		{
+			styleAggregator.append("widget_"+types[i]+"_style");
+		}
+
+		var style = styleAggregator.getAggregate();
+
+		var shellFn = getCompiledShellEmailMarkupTemplate();
+		var shellCode = shellFn(
+		{
+			lang: locale,
+			style: style,
+			body: markup,
+			widget: this
+		});
+
+		fn(shellCode);
+	},
+
 	getWidgetShellCode: function(context, fn)
 	{
 		var title = this.type;
@@ -540,6 +584,16 @@ var getCompiledShellMarkupTemplate = function()
 		compiledShellMarkupTemplate = eval(phnq_ejs.compile(_fs.readFileSync(__dirname+"/shell.html.ejs", "UTF-8"))); 
 	}
 	return compiledShellMarkupTemplate;
+};
+
+var compiledShellEmailMarkupTemplate = null;
+var getCompiledShellEmailMarkupTemplate = function()
+{
+	if(!compiledShellEmailMarkupTemplate)
+	{
+		compiledShellEmailMarkupTemplate = eval(phnq_ejs.compile(_fs.readFileSync(__dirname+"/shell_email.html.ejs", "UTF-8"))); 
+	}
+	return compiledShellEmailMarkupTemplate;
 };
 
 var compiledScriptTemplate = null;

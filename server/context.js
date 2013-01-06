@@ -10,8 +10,11 @@ module.exports = phnq_core.clazz(
 	init: function(theWidget, req)
 	{
 		this.theWidget = theWidget;
-		this.query = req.query;
-		this.headers = req.headers;
+		if(req)
+		{
+			this.query = req.query;
+			this.headers = req.headers;
+		}
 		this.params = {};
 		this.embedded = [];
 	},
