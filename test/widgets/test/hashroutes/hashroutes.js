@@ -4,7 +4,7 @@ var widget =
 {
 	ready: function($$)
 	{
-		phnq.hashroutes.set(
+		phnq.hashroutes(
 		{
 			"default": function(path)
 			{
