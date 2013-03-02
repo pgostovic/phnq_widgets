@@ -9,7 +9,7 @@ phnq.hashroutes = function(routes)
 		if(!routes)
 			return;
 
-		var pathMatcher = /\#\!(\/?)(.*)/.exec(location.hash);
+		var pathMatcher = /\#\!?(\/?)(.*)/.exec(location.hash);
 		if(pathMatcher)
 		{
 			var matched = false;
@@ -38,4 +38,5 @@ phnq.hashroutes = function(routes)
 				routes["default"].apply(this, [""]);
 		}
 	});
+	$(window).hashchange();
 };
