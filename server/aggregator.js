@@ -393,7 +393,7 @@ var getClientBoot = function(refresh)
 	];
 
 	if(!config.jQueryCDN)
-		bootFiles.splice(0, 0, "../client/jquery-1.8.2.js");
+		bootFiles.splice(0, 0, "../client/jquery-"+config.jQueryVersion+".js");
 
 	var buf = [];
 	for(var i=0; i<bootFiles.length; i++)
