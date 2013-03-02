@@ -261,6 +261,12 @@ phnq_log.exec("widgets", function(log)
 					if(options.delayLifecycle && fn)
 						fn();
 
+					// Widgets get added to the "newlyAdded" array from the top
+					// of the DOM down. It is better if descendent widgets get
+					// their ready() function called before their ancestors, so
+					// reverse newlyAdded.
+					newlyAdded.reverse();
+
 					newlyAdded.sort(function(w1, w2)
 					{
 						if(w1.order < w2.order)
