@@ -190,12 +190,10 @@ var Aggregator = phnq_core.clazz(
 	{
 		if(!this.name)
 		{
-			if(this.compKeys)
-				this.compKeys.sort();
-
+			var sortedKeys = phnq_core.clone(this.compKeys).sort();
 			var bitset = new phnq_core.BitSet();
 			var keys = getStringKeys();
-			_.each(this.compKeys, function(key)
+			_.each(sortedKeys, function(key)
 			{
 				bitset.set(_.indexOf(keys, key));
 			});
