@@ -25,20 +25,20 @@ Requirements: node.js, npm
 
 First create an application folder and change into it.
 
-		mkdir my-app
-		cd my-app
+	mkdir my-app
+	cd my-app
 
 Install phnq_widgets into your application.
 
-		npm install phnq_widgets
+	npm install phnq_widgets
 
 Generate your first widget called com.example.HelloWorld.
 
-		node_modules/.bin/phnq_widgets -g com.example.HelloWorld
+	node_modules/.bin/phnq_widgets -g com.example.HelloWorld
 
 Start up a minimal server.
 
-		node_modules/.bin/phnq_widgets -s
+	node_modules/.bin/phnq_widgets -s
 
 Now point your browser to:
 
@@ -49,14 +49,14 @@ You should see an extremely basic page.
 Add some style. Edit the generated file
 widgets/com/example/HelloWorld/HelloWorld.css and make it look like this:
 
-		.__CLASS__ h1
-		{
-			padding: 10px;
-			border: 1px solid #999;
-			background: #ccc;
-			color: #fff;
-			font-family: sans-serif;
-		}
+	.__CLASS__ h1
+	{
+		padding: 10px;
+		border: 1px solid #999;
+		background: #ccc;
+		color: #fff;
+		font-family: sans-serif;
+	}
 
 Refresh your browser and and you should see the effect of the above CSS
 stylings.
@@ -64,16 +64,16 @@ stylings.
 Add some behaviour. Edit the generated file
 widgets/com/example/HelloWorld/HelloWorld.js and make it look like this:
 
-		var widget =
+	var widget =
+	{
+		ready: function($$)
 		{
-			ready: function($$)
+			$$("h1").click(function()
 			{
-				$$("h1").click(function()
-				{
-					alert("Hi!");
-				});
-			}
-		};
+				alert("Hi!");
+			});
+		}
+	};
 
 Refresh your browser. Click on the text HelloWorld and you should trigger
 the alert box to open.
