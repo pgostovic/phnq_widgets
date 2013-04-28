@@ -1,6 +1,5 @@
 phnq_widgets
 ============
-
 Phnq_widgets is a framework for buliding Rich JavaScript Applications by
 organizing UI code along functional instead of technological lines. Instead
 of, for example, putting all the JS files into one folder, CSS files into
@@ -18,9 +17,18 @@ Carving a UI into widgets has many benefits:
 - facilitates the reuse UI functionality
 - etc.
 
+Features
+--------
+In addition to providing the substrate for functional code organization, phnq_widgets
+also provides several advanced web framework features:
+- implicit and explicit dependency management
+- lazy loading and deployment of client-side functionality
+- compilation of templates into JS object code, executable on server or client
+- automatic static file aggregation/minification/ compression
+- pluggable interface for auto-publishing to CDNs
+
 Getting Started
 ---------------
-
 Requirements: node.js, npm
 
 First create an application folder and change into it.
@@ -80,7 +88,6 @@ the alert box to open.
 
 Putting the phnq_widgets utility in your PATH
 ---------------------------------------------
-
 In the Getting Started section we used the phnq_widgets utility a few times,
 but the relative path to the utility is a bit cumbersome to type, so putting
 it in your PATH helps:
