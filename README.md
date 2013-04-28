@@ -1,17 +1,20 @@
 phnq_widgets
 ============
+
 Phnq_widgets is a framework for buliding Rich JavaScript Applications by
 organizing UI code along functional instead of technological lines. Instead
 of, for example, putting all the JS files into one folder, CSS files into
 another folder, and the HTML files into yet another folder, phnq_widgets
 enncourages the grouping together of code that is functionally related,
-regardless of file type, into widgets.
+regardless of file type, into widgets. I call this "functional code
+organization".
 
 A widget is a self-contained chunk of application functionality that may
 include any or all of HTML markup, CSS, JavaScript or static resources such as
-images.
+images, all in a single folder.
 
 Carving a UI into widgets has many benefits:
+
 - intuitive modularization of UI functionality
 - prevents (or at least discourages) monolithic JS and CSS files
 - facilitates the reuse UI functionality
@@ -19,16 +22,34 @@ Carving a UI into widgets has many benefits:
 
 Features
 --------
-In addition to providing the substrate for functional code organization, phnq_widgets
-also provides several advanced web framework features:
+
+In addition to providing the substrate for functional code organization,
+phnq_widgets also provides several advanced web framework features:
+
 - implicit and explicit dependency management
 - lazy loading and deployment of client-side functionality
 - compilation of templates into JS object code, executable on server or client
-- automatic static file aggregation/minification/ compression
+- automatic static file aggregation/minification/compression
 - pluggable interface for auto-publishing to CDNs
+
+The details of these features will be discussed below.
+
+Everything's a Widget
+---------------------
+
+One of the benefits of functional code organization is that it is **very**
+amenable to modularization. Remember that a widget is self-contained and can
+contain everything that it needs (HTML, CSS, JS, images, etc.). Perhaps most
+importantly is that widgets particiapte in dependency management. Examples
+things that can be widgets:
+
+- chunk of rich application functionality (i.e. toolbar, fancy select box, etc.)
+- 3rd party library (i.e. Twitter Bootstrap, jQuery UI, Isotope, etc.)
+- JS API for accessing some remote web service
 
 Getting Started
 ---------------
+
 Requirements: node.js, npm
 
 First create an application folder and change into it.
