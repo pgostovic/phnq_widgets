@@ -78,5 +78,19 @@ widgets/com/example/HelloWorld/HelloWorld.js and make it look like this:
 Refresh your browser. Click on the text HelloWorld and you should trigger
 the alert box to open.
 
+Putting the phnq_widgets utility in your PATH
+---------------------------------------------
+
+In the Getting Started section we used the phnq_widgets utility a few times,
+but the relative path to the utility is a bit cumbersome to type, so putting
+it in your PATH helps:
+
+	export PATH=$PATH:./node_modules/.bin
+
+Put that in your shell startup script, relaunch your shell and then
+phnq_widgets will be in your PATH whenever you're in a directory that has the
+phnq_widgets module installed.
+
+
 
 More documentation soon...
