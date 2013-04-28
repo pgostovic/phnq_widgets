@@ -91,6 +91,8 @@ Put that in your shell startup script, relaunch your shell and then
 phnq_widgets will be in your PATH whenever you're in a directory that has the
 phnq_widgets module installed.
 
+Now, starting your minimal server is a bit more concise:
 
+	phnq_widgets -s
 
 More documentation soon...
