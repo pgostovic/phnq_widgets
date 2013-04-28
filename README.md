@@ -40,7 +40,7 @@ Everything's a Widget
 One of the benefits of functional code organization is that it is **very**
 amenable to modularization. Remember that a widget is self-contained and can
 contain everything that it needs (HTML, CSS, JS, images, etc.). Perhaps most
-importantly is that widgets particiapte in dependency management. Examples
+important is that widgets particiapte in dependency management. Examples of
 things that can be widgets:
 
 - chunk of rich application functionality (i.e. toolbar, fancy select box, etc.)
