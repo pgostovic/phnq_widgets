@@ -494,9 +494,11 @@ module.exports = phnq_core.clazz(
 				locales.push(null); // this is the default locale
 				_.each(locales, function(locale)
 				{
-					if(_fs.statSync(_path.join(i18nDir, locale)).isDirectory())
+					var localeDir = _path.join(i18nDir, locale||".");
+					
+					if(_fs.statSync(localeDir).isDirectory())
 					{
-						var stringsFilePath = _path.join(i18nDir, locale, "strings.json");
+						var stringsFilePath = _path.join(localeDir, "strings.json");
 						var stat = _fs.statSync(stringsFilePath);
 						if(stat && stat.isFile())
 						{

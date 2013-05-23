@@ -10,8 +10,8 @@ describe("Email template", function()
 		{
 			phnq_widgets.renderWidgetAsEmail("test.email_template", {cheese:"Oka"}, "en", function(subject, body)
 			{
-				console.log("subject: ", subject);
-				console.log("body: ", body);
+				// console.log("subject: ", subject);
+				// console.log("body: ", body);
 				assert.equal("one", "one");
 				done();
 			});
