@@ -2,7 +2,8 @@ var log = require("phnq_log").create(__filename);
 var app = null;
 var appRoot = null;
 var _path = require("path");
-var ncp = require("ncp");
+var fs = require("fs");
+var ncp = require("ncp").ncp;
 var phnq_core = require("phnq_core");
 var config = require("./config");
 var aggregator = require("./aggregator");
@@ -101,7 +102,7 @@ var phnq_widgets = module.exports =
 		this.setAppRoot(appRoot);
 		this.config.uriPrefix = "static";
 	
-		var renderDir = path.join(appRoot, "rendered");
+		var renderDir = _path.join(appRoot, "rendered");
 	
 		var markup = this.renderWidget(type, {}, null,
 		{
@@ -112,12 +113,12 @@ var phnq_widgets = module.exports =
 					if(err)
 						return fn(err);
 					
-					fs.writeFile(path.join(renderDir, type+".html"), markup, function(err)
+					fs.writeFile(_path.join(renderDir, type+".html"), markup, function(err)
 					{
 						if(err)
 							return fn(err);
 
-						ncp(path.join(appRoot, "static"), path.join(renderDir, "static"), function(err)
+						ncp(_path.join(appRoot, "static"), _path.join(renderDir, "static"), function(err)
 						{
 							fn(err);
 						});
