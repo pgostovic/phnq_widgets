@@ -118,8 +118,12 @@ var phnq_widgets = module.exports =
 						if(err)
 							return fn(err);
 
+						phnq_core.rmdir(_path.join(appRoot, "static"));
+						phnq_core.rmdir(_path.join(renderDir, "static"));
+
 						ncp(_path.join(appRoot, "static"), _path.join(renderDir, "static"), function(err)
 						{
+							phnq_core.rmdir(_path.join(appRoot, "static"));
 							fn(err);
 						});
 					});
