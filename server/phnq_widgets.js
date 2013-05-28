@@ -103,29 +103,26 @@ var phnq_widgets = module.exports =
 		this.config.uriPrefix = "static";
 	
 		var renderDir = _path.join(appRoot, "rendered");
+
+		phnq_core.rmdir(_path.join(appRoot, "static"));
+		phnq_core.rmdir(_path.join(renderDir, "static"));
 	
 		var markup = this.renderWidget(type, {}, null,
 		{
 			send: function(markup)
 			{
-				fs.mkdir(renderDir, function(err)
+				if(!fs.existsSync(renderDir))
+					fs.mkdirSync(renderDir)
+				
+				fs.writeFile(_path.join(renderDir, type+".html"), markup, function(err)
 				{
 					if(err)
 						return fn(err);
-					
-					fs.writeFile(_path.join(renderDir, type+".html"), markup, function(err)
+
+					ncp(_path.join(appRoot, "static"), _path.join(renderDir, "static"), function(err)
 					{
-						if(err)
-							return fn(err);
-
 						phnq_core.rmdir(_path.join(appRoot, "static"));
-						phnq_core.rmdir(_path.join(renderDir, "static"));
-
-						ncp(_path.join(appRoot, "static"), _path.join(renderDir, "static"), function(err)
-						{
-							phnq_core.rmdir(_path.join(appRoot, "static"));
-							fn(err);
-						});
+						fn(err);
 					});
 				});
 			}
