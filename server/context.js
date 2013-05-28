@@ -15,6 +15,11 @@ module.exports = phnq_core.clazz(
 			this.query = req.query;
 			this.headers = req.headers;
 		}
+		else
+		{
+			this.query = {};
+			this.headers = {};
+		}
 		this.params = {};
 		this.embedded = [];
 	},

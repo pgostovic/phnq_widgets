@@ -2,6 +2,7 @@ var log = require("phnq_log").create(__filename);
 var app = null;
 var appRoot = null;
 var _path = require("path");
+var ncp = require("ncp");
 var phnq_core = require("phnq_core");
 var config = require("./config");
 var aggregator = require("./aggregator");
@@ -31,15 +32,19 @@ var phnq_widgets = module.exports =
 			app.listen(options.port);
 			app.use(phnq_widgets.widgetRenderer());
 		}
-
-		appRoot = this.appRoot = options.appRoot || _path.dirname(process.argv[1]);
-		require("./widget_manager").appRoot = appRoot;
+		
+		this.setAppRoot(options.appRoot || _path.dirname(process.argv[1]));
 
 		require("./routes").init(app, appRoot);
 
 		aggregator.pruneAggDir();
 	},
-
+	
+	setAppRoot: function(theAppRoot)
+	{
+		appRoot = this.appRoot = require("./widget_manager").appRoot = theAppRoot;
+	},
+	
 	getApp: function()
 	{
 		return app;
@@ -88,6 +93,37 @@ var phnq_widgets = module.exports =
 		widget.getEmailMarkup(context, locale, function(code)
 		{
 			fn(subject, code);
+		});
+	},
+	
+	renderStaticWidget: function(type, appRoot, fn)
+	{
+		this.setAppRoot(appRoot);
+		this.config.uriPrefix = "static";
+	
+		var renderDir = path.join(appRoot, "rendered");
+	
+		var markup = this.renderWidget(type, {}, null,
+		{
+			send: function(markup)
+			{
+				fs.mkdir(renderDir, function(err)
+				{
+					if(err)
+						return fn(err);
+					
+					fs.writeFile(path.join(renderDir, type+".html"), markup, function(err)
+					{
+						if(err)
+							return fn(err);
+
+						ncp(path.join(appRoot, "static"), path.join(renderDir, "static"), function(err)
+						{
+							fn(err);
+						});
+					});
+				});
+			}
 		});
 	},
 

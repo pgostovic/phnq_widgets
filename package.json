@@ -6,7 +6,7 @@
   "author"        : "Patrick Gostovic <pg@phnq.org>",
   "repository"    : {"type": "git", "url": "git://github.com/pgostovic/phnq_widgets.git"},
   "main"          : "server/phnq_widgets.js",
-  "version"       : "1.0.12",
+  "version"       : "1.0.14",
   "dependencies"  :
   {
    	"phnq_log": "1.0.x",
@@ -21,6 +21,7 @@
     "mocha": "1.6.0",
     "awssum": "0.12.0",
     "mime": "1.2.x",
+	"ncp": "0.4.x",
     "commander": "1.0.x"
    },
   "scripts"       :

@@ -22,6 +22,7 @@ program
   .version(pkg.version)
   .option("-g, --generate [name]", "generate a basic widget")
   .option("-s, --server [port]", "start minimal widgets server")
+  .option("-r, --render [type]", "render a widget as a static web page")
   .parse(process.argv);
 
 if(program.generate)
@@ -77,4 +78,18 @@ if(program.server)
 	console.log("\nStarting phnq_widgets server on port", port, "...\n");
 	var phnq_widgets = require("phnq_widgets");
 	phnq_widgets.start({port:port, appRoot:appRoot});
+}
+
+if(program.render)
+{
+	var type = program.render;
+	var phnq_widgets = require("phnq_widgets");
+	
+	phnq_widgets.renderStaticWidget(type, appRoot, function(err)
+	{
+		if(err)
+		{
+			console.log("Error rendering widget: ", type, err);
+		}
+	});
 }
