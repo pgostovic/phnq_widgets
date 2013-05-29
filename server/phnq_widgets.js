@@ -3,6 +3,7 @@ var app = null;
 var appRoot = null;
 var _path = require("path");
 var fs = require("fs");
+var _ = require("underscore");
 var ncp = require("ncp").ncp;
 var phnq_core = require("phnq_core");
 var config = require("./config");
@@ -107,22 +108,54 @@ var phnq_widgets = module.exports =
 		phnq_core.rmdir(_path.join(appRoot, "static"));
 		phnq_core.rmdir(_path.join(renderDir, "static"));
 	
-		var markup = this.renderWidget(type, {}, null,
+		this.renderWidget(type, {}, null,
 		{
+			// The 4th arg to renderWidget is a "response" object. Here, we're
+			// just mocking the response object, so just need to implement
+			// a send() function.
 			send: function(markup)
 			{
 				if(!fs.existsSync(renderDir))
-					fs.mkdirSync(renderDir)
+					fs.mkdirSync(renderDir);
 				
+				// write the markup to a file
 				fs.writeFile(_path.join(renderDir, type+".html"), markup, function(err)
 				{
 					if(err)
 						return fn(err);
-
+					
+					// copy the generated static files over
 					ncp(_path.join(appRoot, "static"), _path.join(renderDir, "static"), function(err)
 					{
+						if(err)
+							return fn(err);
+
 						phnq_core.rmdir(_path.join(appRoot, "static"));
-						fn(err);
+						
+						// copy all widget static dirs over
+						var widgets = _.values(require("./widget_manager").instance().widgets);
+						
+						var copyNext = function(err)
+						{
+							if(err || widgets.length == 0)
+								return fn(err);
+								
+							var widget = widgets.pop();
+							var staticDir = _path.join(widget.dir, "_static");
+							if(fs.existsSync(staticDir))
+							{
+								fs.mkdirSync(_path.join(renderDir, "static", widget.type));
+								ncp(staticDir, _path.join(renderDir, "static", widget.type, "static"), function()
+								{
+									copyNext(err);
+								});
+							}
+							else
+							{
+								copyNext();
+							}
+						};
+						copyNext();
 					});
 				});
 			}
