@@ -2,7 +2,7 @@ depend("ext.hashchange");
 
 window.phnq = window.phnq || {};
 
-phnq.hashroutes = function(routes)
+phnq.routes = function(routes)
 {
 	$(window).hashchange(function()
 	{

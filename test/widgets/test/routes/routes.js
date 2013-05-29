@@ -1,10 +1,10 @@
-depend("phnq.hashroutes");
+depend("phnq.routes");
 
 var widget =
 {
 	ready: function($$)
 	{
-		phnq.hashroutes(
+		phnq.routes(
 		{
 			"default": function(path)
 			{

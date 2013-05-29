@@ -1,6 +1,6 @@
 var assert = require("assert");
 
-describe("hashroutes", function()
+describe("routes", function()
 {
 	beforeEach(function(done)
 	{
