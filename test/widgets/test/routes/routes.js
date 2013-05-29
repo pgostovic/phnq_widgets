@@ -1,4 +1,4 @@
-depend("phnq.routes");
+require("phnq.routes");
 
 var widget =
 {

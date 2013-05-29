@@ -357,6 +357,11 @@ phnq_log.exec("widgets", function(log)
 		// not needed on client...
 	};
 
+	window.require = function()
+	{
+		// not needed on client...
+	};
+
 	(function($)
 	{
 		var methods =

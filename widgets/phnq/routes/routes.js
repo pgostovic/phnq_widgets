@@ -1,4 +1,4 @@
-depend("ext.hashchange");
+require("ext.hashchange");
 
 window.phnq = window.phnq || {};
 

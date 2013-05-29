@@ -1,1 +1,1 @@
-depend("test.i18n");
+require("test.i18n");

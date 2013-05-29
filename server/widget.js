@@ -269,7 +269,12 @@ module.exports = phnq_core.clazz(
 					"}catch(ex){}}})"
 				);
 				rawScriptWrapperFn({
-					depend: function(type)
+					// deprecated, use require instead...
+					"depend": function(type)
+					{
+						this.require(type);
+					},
+					"require": function(type)
 					{
 						deps.push(type);
 					}

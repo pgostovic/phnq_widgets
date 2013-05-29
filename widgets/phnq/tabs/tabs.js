@@ -1,4 +1,4 @@
-depend("phnq.deck");
+require("phnq.deck");
 
 var widget =
 {

@@ -1,4 +1,4 @@
-depend("ext.twitter.bootstrap");
+require("ext.twitter.bootstrap");
 
 var widget =
 {
