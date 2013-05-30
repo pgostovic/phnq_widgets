@@ -158,7 +158,7 @@ var WidgetManager = phnq_core.clazz(
 				}
 				else
 				{
-					var m = /[^\.]*\.(ejs|js|css)/.exec(name.replace(/\.html$/, ".html.ejs"));
+					var m = /[^\.]*\.(ejs|js|css)$/.exec(name.replace(/\.html$/, ".html.ejs"));
 					if(m)
 					{
 						var type = _path.basename(_path.dirname(f));

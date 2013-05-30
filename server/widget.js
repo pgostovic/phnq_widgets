@@ -27,7 +27,35 @@ module.exports = phnq_core.clazz(
 		this.i18nStrings = null;
 		this.partials = {};
 		this.tests = {};
+		this.config = this.getConfig();
+
+		// this.extConfig = require(_path.join(dir, "config.json"));
 		log.debug("discovered widget: ", this.type);
+	},
+	
+	getConfig: function()
+	{
+		if(!this.config)
+		{
+			this.config =
+			{
+				"wrapScript": true
+			};
+			
+			try
+			{
+				var configOverride = require(_path.join(this.dir, "config.json"));
+				for(var k in configOverride)
+				{
+					this.config[k] = configOverride[k];
+				}
+			}
+			catch(ex)
+			{
+				// config override probably does not exist
+			}
+		}
+		return this.config;
 	},
 
 	getRemoteHandlers: function()
@@ -59,11 +87,15 @@ module.exports = phnq_core.clazz(
 
 			if(!!rawScript || _.keys(i18nStrings).length > 0 || deps.length > 0)
 			{
+				var scriptWrapped = this.config.wrapScript ? rawScript : "";
+				var scriptNotWrapped = !this.config.wrapScript ? rawScript : "";
+				
 				var scriptTmplt = getCompiledScriptTemplate();
 				this.script = phnq_core.trimLines(scriptTmplt(
 				{
 					type: _this.type,
-					script: rawScript,
+					scriptWrapped: scriptWrapped,
+					scriptNotWrapped: scriptNotWrapped,
 					partialTemplates: JSON.stringify(_this.getCompiledPartials()),
 					remoteMethodNames: JSON.stringify(_.keys(_this.getRemoteHandlers())),
 					i18nStrings: JSON.stringify(i18nStrings),

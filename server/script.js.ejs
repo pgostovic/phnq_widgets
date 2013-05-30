@@ -1,6 +1,8 @@
+<%=scriptNotWrapped%>
+
 phnq_log.exec("<%=type%>", function(log)
 {
-	<%=script%>
+	<%=scriptWrapped%>
 
 	var _widget = typeof(widget) == "object" ? widget : {};
 	_widget._partialTemplates = <%=partialTemplates%>;
