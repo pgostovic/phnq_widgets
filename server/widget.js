@@ -422,7 +422,22 @@ module.exports = phnq_core.clazz(
 	{
 		var title = this.type;
 		var widgetManager = require("./widget_manager").instance();
-
+		
+		context.title = function(bodyFn)
+		{
+			var buf = [];
+			bodyFn(buf);
+			title = buf.join("");
+		};
+		
+		var head = "";
+		context.head = function(bodyFn)
+		{
+			var buf = [];
+			bodyFn(buf);
+			head = buf.join("");
+		};
+		
 		// Get Markup -- includes dependencies
 		var markup = this.getMarkup(context);
 		if(!markup)
@@ -496,6 +511,7 @@ module.exports = phnq_core.clazz(
 		var shellCode = shellFn(
 		{
 			title: title,
+			head: head,
 			lang: locale,
 			prefix: config.uriPrefix,
 			body: markup,
