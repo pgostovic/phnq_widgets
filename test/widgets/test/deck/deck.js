@@ -2,7 +2,7 @@ var widget =
 {
 	ready: function($$)
 	{
-		var deck = this.find("phnq.deck")[0];
+		var deck = this.findOne(/deck/);
 
 		$$("button.one").click(function()
 		{

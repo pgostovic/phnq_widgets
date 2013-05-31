@@ -41,6 +41,15 @@ phnq_log.exec("widgets", function(log)
 	                }
 	                return this.$$;
 				},
+				
+				findOne: function(type)
+				{
+					var all = this.find(type);
+					if(all.length > 1)
+						throw "findOne("+type+") result was ambiguous. Use find("+type+") to return an array of matches.";
+					
+					return all.length == 0 ? null : all[0];
+				},
 
 				find: function(type)
 				{
@@ -48,8 +57,19 @@ phnq_log.exec("widgets", function(log)
 					this.get$$()(".winst").each(function()
 					{
 						var widgetObj = $(this).data("widget");
-						if(widgetObj && widgetObj.type == type)
-							found.push(widgetObj);
+						if(widgetObj)
+						{
+							if(type instanceof RegExp)
+							{
+								if(widgetObj.type.match(type))
+									found.push(widgetObj);
+							}
+							else if(typeof(type) == "string")
+							{
+								if(widgetObj.type == type)
+									found.push(widgetObj);
+							}
+						}
 					});
 					return found;
 				},
