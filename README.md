@@ -17,7 +17,7 @@ Carving a UI into widgets has many benefits:
 
 - intuitive modularization of UI functionality
 - prevents (or at least discourages) monolithic JS and CSS files
-- facilitates the reuse UI functionality
+- facilitates the reuse of UI functionality
 - etc.
 
 Features
