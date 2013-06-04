@@ -1,5 +1,3 @@
-window.phnq = window.phnq || {};
-
 phnq.net =
 {
     getJSON: function(url, params, fn, errorFn)

@@ -189,6 +189,9 @@ var WidgetManager = phnq_core.clazz(
 						else
 						{
 							widget[ext+"File"] = f;
+							
+							widget[ext+"Files"] = widget[ext+"Files"] || [];
+							widget[ext+"Files"].push(f);
 						}
 					}
 				}

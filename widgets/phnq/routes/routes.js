@@ -1,7 +1,5 @@
 require("ext.hashchange");
 
-window.phnq = window.phnq || {};
-
 phnq.routes = function(routes)
 {
 	$(window).hashchange(function()

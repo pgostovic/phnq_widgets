@@ -81,7 +81,23 @@ module.exports = phnq_core.clazz(
 		if(this.script === undefined)
 		{
 			var _this = this;
-			var rawScript = this.getFileData("js") || "";
+			
+			var jsFiles = this["jsFiles"] || [];
+			var hasMult = jsFiles.length > 1;
+			
+			var buf = [];
+			for(var i=0; i<jsFiles.length; i++)
+			{
+				if(hasMult)
+					buf.push("(function(){")
+				
+				buf.push(_fs.readFileSync(jsFiles[i], "UTF-8"));
+				
+				if(hasMult)
+					buf.push("})();")
+			}
+			
+			var rawScript = buf.length == 0 ? null : buf.join("");
 			var i18nStrings = this.getI18nStrings();
 			var deps = this.getDependencies();
 

@@ -1,7 +1,5 @@
 var listenersByEventName = {};
 
-window.phnq = window.phnq || {};
-
 phnq.notify =
 {
     listen: function(eventName, listenerFn)
