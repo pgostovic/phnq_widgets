@@ -141,7 +141,7 @@ module.exports = phnq_core.clazz(
 				var url = m[1];
 				if(!url.match(/^(\/|data:|https?:)/))
 				{
-					url = config.uriPrefix + "/" + this.type + "/" + url;
+					url = (config.uriPrefixAggCss || config.uriPrefix) + "/" + this.type + "/" + url;
 				}
 				buf.push("url("+url+")");
 				idx = URL_REGEX.lastIndex;
@@ -466,6 +466,9 @@ module.exports = phnq_core.clazz(
 			types.push(type);
 		});
 		types = _.uniq(types);
+		
+		// TODO: Should sort the types so dependencies appear before dependees
+		
 		var typesLen = types.length;
 
 		// find the external scripts
