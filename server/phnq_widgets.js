@@ -98,7 +98,7 @@ var phnq_widgets = module.exports =
 		});
 	},
 	
-	renderStaticWidget: function(type, appRoot, fn)
+	renderStaticWidget: function(type, appRoot, indexFile, fn)
 	{
 		this.setAppRoot(appRoot);
 		this.config.uriPrefix = "static";
@@ -120,7 +120,7 @@ var phnq_widgets = module.exports =
 					fs.mkdirSync(renderDir);
 				
 				// write the markup to a file
-				fs.writeFile(_path.join(renderDir, type+".html"), markup, function(err)
+				fs.writeFile(_path.join(renderDir, indexFile), markup, function(err)
 				{
 					if(err)
 						return fn(err);

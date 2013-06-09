@@ -84,8 +84,9 @@ if(program.render)
 {
 	var type = program.render;
 	var phnq_widgets = require("phnq_widgets");
+	var indexFile = program.args.length == 0 ? type + ".html" : program.args[0];
 	
-	phnq_widgets.renderStaticWidget(type, appRoot, function(err)
+	phnq_widgets.renderStaticWidget(type, appRoot, indexFile, function(err)
 	{
 		if(err)
 		{
