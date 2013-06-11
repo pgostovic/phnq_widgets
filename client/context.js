@@ -4,8 +4,9 @@ phnq_log.exec("context", function(log)
 
 	phnq_widgets.Context = phnq_core.clazz(
 	{
-		init: function(params)
+		init: function(type, params)
 		{
+			this.type = type;
 			this.params = params;
 			this.query = getQueryParams();
 		},

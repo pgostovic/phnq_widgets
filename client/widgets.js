@@ -87,7 +87,7 @@ phnq_log.exec("widgets", function(log)
 						{
 							try
 							{
-								var ctx = phnq_core.extend(new phnq_widgets.Context({}), data[i]);
+								var ctx = phnq_core.extend(new phnq_widgets.Context(this.type, {}), data[i]);
 								buf.push(partialFn(ctx, ctx));
 							}
 							catch(ex)
@@ -209,8 +209,7 @@ phnq_log.exec("widgets", function(log)
 				{
 					var paramsMatcher = /<!--(.*)?-->/.exec($(wphElmnt).html());
 					var params = paramsMatcher ? JSON.parse(paramsMatcher[1]) : {};
-					var context = new phnq_widgets.Context(params);
-					context.type = type;
+					var context = new phnq_widgets.Context(type, params);
 
 					var markup = tmpltFn(context);
 

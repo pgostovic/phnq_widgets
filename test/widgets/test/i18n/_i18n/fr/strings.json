@@ -1,3 +1,4 @@
 {
-	"helloworld": "Bonjour Monde!"
+	"helloworld": "Bonjour Monde!",
+	"name-label": "Nom: "
 }

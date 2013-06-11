@@ -20,4 +20,9 @@ describe("Tests with language set to English", function()
 		var str = browser.text("h1.nothing");
 		assert(str.match(/^\[MISSING_STRING\(/));
 	});
+
+	it("should correctly insert localized text in a partial rendered on the client", function()
+	{
+		assert.equal(browser.text("h1.item"), "Name: Bubba");
+	});
 });
