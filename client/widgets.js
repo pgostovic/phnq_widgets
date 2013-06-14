@@ -101,6 +101,11 @@ phnq_log.exec("widgets", function(log)
 						throw "No partial named '"+name+"' in "+this.type;
 					}
 					return buf.join("");
+				},
+				
+				i18n: function(key, params)
+				{
+					return phnq_widgets.getI18nString(this.type, key, params);
 				}
 			});
 
@@ -363,6 +368,86 @@ phnq_log.exec("widgets", function(log)
 
                 fn();
             });
+		},
+		
+		getI18nString: function(type, key)
+		{
+			if(arguments.length < 2)
+				throw "phnq_widgets.getI18nString(type, key) requires two arguments.";
+			
+			var widgetClasses = this.widgetClasses;
+			
+			var params = undefined;
+			var locale = undefined;
+			var localeOrig = undefined;
+
+			for(var i=2; i<arguments.length; i++)
+			{
+				var arg = arguments[i];
+				
+				if(arg != null && typeof(arg) == "object")
+				{
+					params = arg;
+				}
+				else
+				{
+					if(locale === undefined)
+						locale = arg;
+					else if(localeOrig === undefined)
+						localeOrig = arg;
+				}
+			}
+			
+			locale = locale === undefined ? $("html").attr("lang") : locale;
+			localeOrig = localeOrig || locale;
+
+			var i18nStrings = widgetClasses[type].prototype._i18nStrings;
+
+			if(i18nStrings[locale] && i18nStrings[locale][key])
+				return parameterize(i18nStrings[locale][key], params);
+
+			if(locale)
+				return this.getI18nString(type, key, getParentLocale(locale), localeOrig, params);
+
+			var deps = widgetClasses[type].prototype._dependencies;
+			for(var i=0; i<deps.length; i++)
+			{
+				var str = this.getI18nString(deps[i], key, localeOrig, params);
+				if(str)
+					return str;
+			}
+
+			return null;
+		}
+	};
+
+	var PARAM_REGEX = /\$\{(.*?)\}/g
+	var parameterize = function(str, params)
+	{
+		if(params)
+		{
+			return str.replace(PARAM_REGEX, function(match, $1)
+			{
+				return params[$1] || "";
+			});
+		}
+		else
+		{
+			return str;
+		}
+	};
+	
+	var getParentLocale = function(locale)
+	{
+		var comps = locale.split(/[_-]/);
+		if(comps.length > 1)
+		{
+			comps.pop();
+			return comps.join("_");
+		}
+		else
+		{
+			return null;
 		}
 	};
 

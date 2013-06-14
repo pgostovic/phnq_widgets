@@ -25,4 +25,9 @@ describe("Tests with language set to French", function()
 	{
 		assert.equal(browser.text("h1.item"), "Nom: Bubba");
 	});
+	
+	it("should correctly insert parameterized localized text programmatically on the client", function()
+	{
+		assert.equal(browser.text("h1.greeting"), "Bonjour Gump, Bubba.");
+	});
 });

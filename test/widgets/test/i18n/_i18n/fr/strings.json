@@ -1,4 +1,5 @@
 {
 	"helloworld": "Bonjour Monde!",
-	"name-label": "Nom: "
+	"name-label": "Nom: ",
+	"greeting": "Bonjour ${lastName}, ${firstName}."
 }
