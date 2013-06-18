@@ -75,6 +75,42 @@ var WidgetManager = phnq_core.clazz(
 		});
 		return buf.join("");
 	},
+	
+	sortDependencies: function(types)
+	{
+		var _this = this;
+		
+		types.sort(function(t1, t2)
+		{
+			var w1 = _this.getWidget(t1);
+			var w2 = _this.getWidget(t2);
+			var d1on2 = w1.dependsOnType(w2.type);
+			var d2on1 = w2.dependsOnType(w1.type);
+			
+			if(d1on2 && d2on1)
+			{
+				var w1Deps = w1.getDependencies();
+				var w2Deps = w2.getDependencies();
+				log.debug("Circular dependency detected: ", w1.type, w1Deps, w2.type, w2Deps);
+				return 0;
+			}
+			
+			if(d1on2)
+			{
+				return 1;
+			}
+			else if(d2on1)
+			{
+				return -1;
+			}
+			else
+			{
+				return 0;
+			}
+		});
+		
+		return types;
+	},
 
 	scan: function()
 	{

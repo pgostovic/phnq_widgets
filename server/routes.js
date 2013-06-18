@@ -71,6 +71,8 @@ exports.init = function(app, appRoot)
 			}
 		}
 		toLoad = _.uniq(toLoad);
+		
+		toLoad = widgetManager.sortDependencies(toLoad);
 
 		for(var i=0; i<toLoad.length; i++)
 		{

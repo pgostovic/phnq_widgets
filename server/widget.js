@@ -279,6 +279,21 @@ module.exports = phnq_core.clazz(
 
 		return phnq_ejs.compile(ejs);
 	},
+	
+	dependsOnType: function(type)
+	{
+		var deps = this.getDependencies();
+		var i = deps.length;
+		while(i--)
+		{
+			var dep = deps[i];
+			if(dep == type)
+			{
+				return true;
+			}
+		}
+		return false;
+	},
 
 	getDependencies: function()
 	{
@@ -467,7 +482,7 @@ module.exports = phnq_core.clazz(
 		});
 		types = _.uniq(types);
 		
-		// TODO: Should sort the types so dependencies appear before dependees
+		types = widgetManager.sortDependencies(types);
 		
 		var typesLen = types.length;
 
