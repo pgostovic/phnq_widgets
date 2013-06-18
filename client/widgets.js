@@ -466,6 +466,8 @@ phnq_log.exec("widgets", function(log)
 		// not needed on client...
 	};
 
+	var widgetAppendIdx = 0;
+
 	(function($)
 	{
 		var methods =
@@ -516,6 +518,21 @@ phnq_log.exec("widgets", function(log)
 			{
 				$.error('Method ' +  method + ' does not exist on jQuery.widgets');
 			}    
+		};
+		
+		$.fn.appendWidget = function(type, params)
+		{
+			var _this = this;
+			
+			var tempClass = "___tempWidgetAppendClass___"+widgetAppendIdx;
+			
+			this.addClass(tempClass);
+			this.append(methods.wph(type, params));
+			phnq_widgets.scan({wphSelector:"."+tempClass+" > .wph"}, function()
+			{
+				_this.removeClass(tempClass);
+			});
+			return this;
 		};
 	})(jQuery);
 });
