@@ -358,6 +358,7 @@ module.exports = phnq_core.clazz(
 			}
 
 			this.dependencies = _.uniq(_.union(deps, depDeps));
+			this.dependencies = require("./widget_manager").instance().sortDependencies(this.dependencies);
 		}
 		return _.clone(this.dependencies);
 	},
