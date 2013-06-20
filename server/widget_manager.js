@@ -45,6 +45,11 @@ var WidgetManager = phnq_core.clazz(
 			log.debug("Error adding widget scan path: ", ex.toString());
 		}
 	},
+	
+	getAllTypes: function()
+	{
+		return _.keys(this.widgets);
+	},
 
 	getWidget: function(type)
 	{

@@ -8,5 +8,6 @@ module.exports =
 	minifyJS: false,
 	minifyCSS: false,
 	compressJS: false,
-	compressCSS: false
+	compressCSS: false,
+	loadAllWidgets: false
 };

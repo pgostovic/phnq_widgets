@@ -475,13 +475,22 @@ module.exports = phnq_core.clazz(
 		if(!markup)
 			markup = "<h1 style=\"font-family:sans-serif\">no markup: "+this.type+"</h1>";
 
-		var types = this.getDependencies();
-		types.push(this.type);
-		_.each(context.embedded, function(type)
+		var types;
+		
+		if(config.loadAllWidgets)
 		{
-			types.push(type);
-		});
-		types = _.uniq(types);
+			types = widgetManager.getAllTypes();
+		}
+		else
+		{
+			types = this.getDependencies();
+			types.push(this.type);
+			_.each(context.embedded, function(type)
+			{
+				types.push(type);
+			});
+			types = _.uniq(types);
+		}
 		
 		types = widgetManager.sortDependencies(types);
 		
