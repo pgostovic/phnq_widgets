@@ -9,5 +9,6 @@ module.exports =
 	minifyCSS: false,
 	compressJS: false,
 	compressCSS: false,
-	loadAllWidgets: false
+	loadAllWidgets: false,
+	includeTemplateWithScript: false
 };

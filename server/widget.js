@@ -106,7 +106,7 @@ module.exports = phnq_core.clazz(
 				var scriptWrapped = this.config.wrapScript ? rawScript : "";
 				var scriptNotWrapped = !this.config.wrapScript ? rawScript : "";
 				
-				var widgetTmplt = config.loadAllWidgets ? JSON.stringify(this.getCompiledMarkup()) : null;
+				var widgetTmplt = config.includeTemplateWithScript ? JSON.stringify(this.getCompiledMarkup()) : null;
 				
 				var scriptTmplt = getCompiledScriptTemplate();
 				this.script = phnq_core.trimLines(scriptTmplt(

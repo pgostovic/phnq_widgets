@@ -103,7 +103,7 @@ var phnq_widgets = module.exports =
 		this.setAppRoot(appRoot);
 		this.config.uriPrefix = "static";
 		this.config.uriPrefixAggCss = "../../static";
-		this.config.loadAllWidgets = true;
+		this.config.includeTemplateWithScript = true;
 	
 		var renderDir = _path.join(appRoot, "rendered");
 
