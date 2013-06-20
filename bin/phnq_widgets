@@ -22,6 +22,7 @@ program
   .version(pkg.version)
   .option("-g, --generate [name]", "generate a basic widget")
   .option("-s, --server [port]", "start minimal widgets server")
+  .option("-a, --all", "load all widgets (applies to server)")
   .option("-r, --render [type]", "render a widget as a static web page")
   .parse(process.argv);
 
@@ -70,6 +71,11 @@ if(program.generate)
 			fs.writeFileSync(rootName+".js", "var widget =\n{\n\tready: function($$)\n\t{\n\t\t// widget has been rendered\n\t}\n};\n", "UTF-8");
 		}
 	});
+}
+
+if(program.all)
+{
+	require("phnq_widgets").config.loadAllWidgets = true;
 }
 
 if(program.server)

@@ -106,6 +106,8 @@ module.exports = phnq_core.clazz(
 				var scriptWrapped = this.config.wrapScript ? rawScript : "";
 				var scriptNotWrapped = !this.config.wrapScript ? rawScript : "";
 				
+				var widgetTmplt = config.loadAllWidgets ? JSON.stringify(this.getCompiledMarkup()) : null;
+				
 				var scriptTmplt = getCompiledScriptTemplate();
 				this.script = phnq_core.trimLines(scriptTmplt(
 				{
@@ -115,7 +117,8 @@ module.exports = phnq_core.clazz(
 					partialTemplates: JSON.stringify(_this.getCompiledPartials()),
 					remoteMethodNames: JSON.stringify(_.keys(_this.getRemoteHandlers())),
 					i18nStrings: JSON.stringify(i18nStrings),
-					dependencies: JSON.stringify(deps)
+					dependencies: JSON.stringify(deps),
+					widgetTmplt: widgetTmplt
 				}));
 			}
 			else

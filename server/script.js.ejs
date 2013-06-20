@@ -12,4 +12,8 @@ phnq_log.exec("<%=type%>", function(log)
 	_widget._i18nStrings = <%=i18nStrings%>;
 	_widget._dependencies = <%=dependencies%>;
 	phnq_widgets.create("<%=type%>", _widget);
+	
+	<% if(!!widgetTmplt) { %>
+		phnq_widgets.addWidgetTemplate("<%=type%>", <%=widgetTmplt%>);
+	<% } %>
 });

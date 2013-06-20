@@ -10,6 +10,11 @@ phnq_log.exec("widgets", function(log)
 		config: {}, // this gets filled in from the server
 
 		widgetClasses: widgetClasses,
+		
+		addWidgetTemplate: function(type, tmpltStr)
+		{
+			widgetTmpltFns[type] = eval(tmpltStr);
+		},
 
 		create: function(type, obj)
 		{
@@ -353,7 +358,7 @@ phnq_log.exec("widgets", function(log)
             	// add templates
             	for(var type in res.templates)
             	{
-            		widgetTmpltFns[type] = eval(res.templates[type]);
+					phnq_widgets.addWidgetTemplate(type, res.templates[type]);
             	}
 
             	// Add CSS to page
