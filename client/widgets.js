@@ -525,7 +525,7 @@ phnq_log.exec("widgets", function(log)
 			}    
 		};
 		
-		$.fn.appendWidget = function(type, params)
+		$.fn.appendWidget = function(type, params, fn)
 		{
 			var _this = this;
 			
@@ -536,6 +536,10 @@ phnq_log.exec("widgets", function(log)
 			phnq_widgets.scan({wphSelector:"."+tempClass+" > .wph"}, function()
 			{
 				_this.removeClass(tempClass);
+				if(!!fn && typeof(fn) == "function")
+				{
+					fn();
+				}
 			});
 			return this;
 		};
