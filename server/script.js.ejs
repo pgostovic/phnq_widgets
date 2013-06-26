@@ -4,6 +4,8 @@ phnq_core.jsNS("<%=type%>");
 
 phnq_log.exec("<%=type%>", function(log)
 {
+	var __TYPE__ = "<%=type%>";
+
 	<%=scriptWrapped%>
 
 	var _widget = typeof(widget) == "object" ? widget : {};
