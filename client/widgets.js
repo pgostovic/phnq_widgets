@@ -8,6 +8,8 @@ phnq_log.exec("widgets", function(log)
 	window.phnq_widgets =
 	{
 		config: {}, // this gets filled in from the server
+		
+		defaultWphSelector: ".wph:visible",
 
 		widgetClasses: widgetClasses,
 		
@@ -206,10 +208,10 @@ phnq_log.exec("widgets", function(log)
 			options = options || {};
 
 			newlyAdded = newlyAdded || [];
-
+			
 			// Turn widget placeholders into widgets (markup only), or if no
 			// markup available, add type to a list of types to load.
-			$(options.wphSelector || ".wph:visible").each(function()
+			$(options.wphSelector || this.defaultWphSelector).each(function()
 			{
 				added = true;
 				var wphElmnt = this;
@@ -533,7 +535,7 @@ phnq_log.exec("widgets", function(log)
 			
 			this.addClass(tempClass);
 			this.append(methods.wph(type, params));
-			phnq_widgets.scan({wphSelector:"."+tempClass+" > .wph"}, function()
+			phnq_widgets.scan({wphSelector:"."+tempClass+" .wph"}, function()
 			{
 				_this.removeClass(tempClass);
 				if(!!fn && typeof(fn) == "function")
