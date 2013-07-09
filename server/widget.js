@@ -495,8 +495,6 @@ module.exports = phnq_core.clazz(
 			types = _.uniq(types);
 		}
 		
-		types = widgetManager.sortDependencies(types);
-		
 		var typesLen = types.length;
 
 		// find the external scripts
@@ -534,7 +532,7 @@ module.exports = phnq_core.clazz(
 			scriptAggregator.append("widget_"+types[i]+"_script");
 			styleAggregator.append("widget_"+types[i]+"_style");
 		}
-
+		
 		var aggScriptUrl, aggStyleUrl;
 
 		if(cdn.getCDN())
