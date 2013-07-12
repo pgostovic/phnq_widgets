@@ -566,7 +566,14 @@ module.exports = phnq_core.clazz(
 			aggStyleUrl: aggStyleUrl,
 			widget: this
 		});
-
+		
+		var scriptExtractRe = /(<script.*<\/script>)\s*<\/html>/;
+		var matcher = scriptExtractRe.exec(shellCode);
+		var scriptTagCode = matcher[1];
+		
+		shellCode = shellCode.replace(scriptTagCode, "");
+		shellCode = shellCode.replace("</body>", scriptTagCode+"\n</body>")
+		
 		scriptAggregator.generate(function()
 		{
 			styleAggregator.generate(function()
