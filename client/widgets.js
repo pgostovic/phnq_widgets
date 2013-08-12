@@ -3,6 +3,7 @@ phnq_log.exec("widgets", function(log)
 	var widgetClasses = {};
 	var widgetTmpltFns = {};
 	var requestedTypes = {};
+	var widgetInstances = [];
 	var nextIdIdx = 0;
 
 	window.phnq_widgets =
@@ -28,6 +29,14 @@ phnq_log.exec("widgets", function(log)
 				{
 					if(this.ready)
 						this.ready(this.get$$());
+						
+					widgetInstances.push(this);
+				},
+				
+				_destroy: function()
+				{
+					if(this.destroy)
+						this.destroy();
 				},
 
 				getElement: function()
@@ -315,8 +324,25 @@ phnq_log.exec("widgets", function(log)
 
 					if(!options.delayLifecycle && fn)
 						fn();
+						
+					_this.cleanup();
 				}
 			});
+		},
+		
+		cleanup: function()
+		{
+			var i = widgetInstances.length;
+			while(i--)
+			{
+				var w = widgetInstances[i];
+				if(w.elmntId && !document.getElementById(w.elmntId))
+				{
+					w._destroy();
+					widgetInstances.splice(i, 1);
+					delete w;
+				}
+			}
 		},
 
 		// Load required widgets.  It is possible for widgets to have been partially
