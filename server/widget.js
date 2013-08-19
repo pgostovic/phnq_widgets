@@ -248,7 +248,8 @@ module.exports = phnq_core.clazz(
 			buf.push("<"+node.name);
 			for(var k in node.attributes)
 			{
-				var v = _this.absolutizePathIfNeeded("", node.name, k, node.attributes[k]);
+				var absolutize = node.attributes["data-absolutize"] != "false";
+				var v = absolutize ? _this.absolutizePathIfNeeded("", node.name, k, node.attributes[k]) : node.attributes[k];
 				buf.push(" "+k+"=\""+v+"\"");
 			}
 			buf.push(">");
@@ -377,7 +378,7 @@ module.exports = phnq_core.clazz(
 	absolutizePathIfNeeded: function(tagUri, tagName, attrName, attrValue)
 	{
 		var LEADING_EJS = /^<%=([^%]*)%>(.*)/;
-		var LEADING_EXP = /^\$\{([^%]*)\}(.*)/;
+		var LEADING_EXP = /^\$\{([^}]*)\}(.*)/;
 		var TRAILING_EJS = /^([^<]*)(<%=.*)/;
 		var TRAILING_EXP = /^([^\$]*)(\$\{.*)/;
 
