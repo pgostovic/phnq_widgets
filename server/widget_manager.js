@@ -89,6 +89,10 @@ var WidgetManager = phnq_core.clazz(
 		{
 			var w1 = _this.getWidget(t1);
 			var w2 = _this.getWidget(t2);
+			if(!w1 || !w2)
+			{
+				return 0;
+			}
 			var d1on2 = w1.dependsOnType(w2.type);
 			var d2on1 = w2.dependsOnType(w1.type);
 			
