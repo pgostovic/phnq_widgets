@@ -2,14 +2,6 @@ var assert = require("assert");
 
 describe("routes", function()
 {
-	beforeEach(function(done)
-	{
-		browser.reload(function()
-		{
-			done();
-		});
-	});
-
 	it("should display SLASHPATH when location.hash is set to #!/path", function(done)
 	{
 		browser.location = "#!/path";
