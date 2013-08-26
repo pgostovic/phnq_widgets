@@ -647,10 +647,12 @@ module.exports = phnq_core.clazz(
 		var _this = this;
 		var buf = [];
 
+		var pageUrl = new String(baseUrl+this.type);
+
 		buf.push("describe(\"Tests for widget: "+this.type+"\", function() {");
 		buf.push("var browserOptions = {};");
 		buf.push("beforeEach(function(done){");
-		buf.push("browser.visit(\""+baseUrl+this.type+"\", browserOptions, function(){done();});");
+		buf.push("browser.visit(\""+pageUrl+"\", browserOptions, function(){done();});");
 		buf.push("});");
 		buf.push("after(function(){");
 		buf.push("browserOptions = {};");
