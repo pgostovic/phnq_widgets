@@ -17,7 +17,7 @@
     "underscore": "1.3.3",
     "uglify-js": "1.3.x",
     "express": "3.x",
-    "zombie": "1.4.x",
+    "zombie": "2.0.0-alpha21",
     "mocha": "1.6.0",
     "awssum": "0.12.0",
     "mime": "1.2.x",
