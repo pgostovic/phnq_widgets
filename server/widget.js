@@ -385,6 +385,7 @@ module.exports = phnq_core.clazz(
 		var absBase = config.uriPrefix + "/" + this.type + "/";
 		switch(tagUri + ":" + tagName+":"+attrName)
 		{
+			case ":link:href":
 			case ":img:src":
 			{
 				var m;
