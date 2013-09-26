@@ -70,7 +70,7 @@ var phnq_widgets = module.exports =
 		if(!widget)
 			return res.send(404);
 
-		phnq_core.extend(context, new Context(widget, req));
+		context = phnq_core.extend(new Context(widget, req), context);
 
 		widget.getWidgetShellCode(context, function(code)
 		{
@@ -84,7 +84,7 @@ var phnq_widgets = module.exports =
 		if(!widget)
 			return fn(null);
 
-		phnq_core.extend(context, new Context(widget));
+		context = phnq_core.extend(new Context(widget), context);
 
 		var subject = "";
 		context.subject = function(subj)

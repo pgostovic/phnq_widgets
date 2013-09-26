@@ -22,6 +22,7 @@ module.exports = phnq_core.clazz(
 		}
 		this.params = {};
 		this.embedded = [];
+        this.model = this.model || {};
 	},
 
 	i18n: function(key, defaultValue)
