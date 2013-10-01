@@ -1,16 +1,18 @@
 <!DOCTYPE html>
-<html lang="<%=lang%>">
+<html lang="${lang}">
 	<head>
-		<title><%=title%></title>
-		<link rel="stylesheet" href="<%=aggStyleUrl%>" type="text/css" media="screen" charset="utf-8"/>
-		<%=head%>
+		<title>${title}</title>
+		<link href="${aggStyleUrl}" rel="stylesheet">
+		${head}
 	</head>
-	<% if(widget.rootTagName != "body") { %><body><% } %>
-		<%=body%>
-	<% if(widget.rootTagName != "body") { %></body><% } %>
-	<% if(jQueryCDN) { %>
+    {if widget.rootTagName != "body"}<body>{/if}
+        ${body}
+    {if widget.rootTagName != "body"}</body>{/if}
+    
+    
+	{if jQueryCDN }
 		<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
-	<% } %>
-	<%=extScript%>
-	<script type="text/javascript" src="<%=aggScriptUrl%>"></script>
+    {/if}
+	${extScript}
+	<script src="${aggScriptUrl}"></script>
 </html>

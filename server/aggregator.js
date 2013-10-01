@@ -12,6 +12,7 @@ var log = require("phnq_log").create(__filename);
 var strings = {};
 var files = [];
 var nameCache = {};
+var lessSearchPath = [];
 
 var stringKeys = null;
 var getStringKeys = function()
@@ -68,6 +69,15 @@ module.exports =
 		strings = _.pick(strings, files);
 		stringKeys = null;
 	},
+    
+    addToLessSearchPath: function(path)
+    {
+        if(!_.contains(lessSearchPath, path))
+        {
+            log.debug("Adding to less search path: ", path);
+            lessSearchPath.push(path);
+        }
+    },
 
 	pruneAggDir: function()
 	{
@@ -170,9 +180,11 @@ var Aggregator = phnq_core.clazz(
 					this.compKeys.push(keys[i]);
 				}
 			}
-			var nameCheck = this.getName();
-			if(name != nameCheck)
-				throw "Aggregate checksum failed: "+nameCheck+"."+ext+" != "+name+"."+ext;
+            
+            
+            // var nameCheck = this.getName();
+            // if(name != nameCheck)
+            //     throw "Aggregate checksum failed: "+nameCheck+"."+ext+" != "+name+"."+ext;
 		}
 	},
 
@@ -186,111 +198,128 @@ var Aggregator = phnq_core.clazz(
 		}
 	},
 
-	getName: function()
+	getName: function(fn)
 	{
-		if(!this.name)
+        if(this.name)
+            return fn(null, this.name);
+        
+        var _this = this;
+        
+		var sortedKeys = phnq_core.clone(this.compKeys).sort();
+		var bitset = new phnq_core.BitSet();
+		var keys = getStringKeys();
+		_.each(sortedKeys, function(key)
 		{
-			var sortedKeys = phnq_core.clone(this.compKeys).sort();
-			var bitset = new phnq_core.BitSet();
-			var keys = getStringKeys();
-			_.each(sortedKeys, function(key)
-			{
-				bitset.set(_.indexOf(keys, key));
-			});
+			bitset.set(_.indexOf(keys, key));
+		});
 
-			var bitsetArr = bitset.toArray().join("_");
-
-			if(!(this.name = nameCache[bitsetArr]))
-			{
-				var hash = crypto.createHash("md5");
-				hash.update(this.getAggregate(), "UTF-8");
-				this.name = nameCache[bitsetArr] = bitsetArr + "_" + hash.digest("hex");
-			}
-		}
-		return this.name;
+		var bitsetArr = bitset.toArray().join("_");
+        
+        this.name = nameCache[bitsetArr];
+        if(this.name)
+            return fn(null, this.name);
+            
+        this.getAggregate(function(err, agg)
+        {
+    		var hash = crypto.createHash("md5");
+    		hash.update(agg, "UTF-8");
+    		_this.name = nameCache[bitsetArr] = bitsetArr + "_" + hash.digest("hex");
+            fn(null, _this.name);
+        });
 	},
 
-	getAggregate: function()
+	getAggregate: function(fn)
 	{
-		if(!this.aggStr)
+		if(this.aggStr)
+            return fn(null, this.aggStr);
+        
+        var _this = this;
+		var buf = [];
+		_.each(this.compKeys, function(key)
 		{
-			var buf = [];
-			_.each(this.compKeys, function(key)
-			{
-				buf.push(strings[key]);
-			});
-			this.aggStr = this.process(buf.join(""));
-		}
-		return this.aggStr;
+			buf.push(strings[key]);
+		});
+        
+        this.process(buf.join(""), function(err, aggStr)
+        {
+            fn(err, _this.aggStr = aggStr);
+        });
 	},
 
 	generate: function(fn)
 	{
 		var _this = this;
+        
+        this.getName(function(err, name)
+        {
+    		var file = path.join(require("./phnq_widgets").appRoot, "static", "agg", name+"."+_this.ext);
 
-		var file = path.join(require("./phnq_widgets").appRoot, "static", "agg", this.getName()+"."+this.ext);
+    		var ensureExists = function(fn2)
+    		{
+    			createAggDir(function()
+    			{
+    				fs.exists(file, function(exists)
+    				{
+    					if(exists)
+    						return fn2();
 
-		var ensureExists = function(fn2)
-		{
-			createAggDir(function()
-			{
-				fs.exists(file, function(exists)
-				{
-					if(exists)
-						return fn2();
+    					log.startTimer();
+                    
+                        _this.getAggregate(function(err, agg)
+                        {
+    						if(err)
+    							throw err;
+                        
+        					fs.writeFile(file, agg, "UTF-8", function(err)
+        					{
+        						if(err)
+        							throw err;
 
-					log.startTimer();
+        						log.debug("generated aggregate: ", path.relative(require("./phnq_widgets").appRoot, file));
 
-					var agg = _this.getAggregate();
+        						fn2();
+        					});
+                        });
+    				});
+    			});
+    		};
 
-					fs.writeFile(file, agg, "UTF-8", function(err)
-					{
-						if(err)
-							throw err;
+    		ensureExists(function()
+    		{
+    			if(_this.shouldCompress())
+    			{
+    				var gzipFile = file + ".gz";
+    				fs.exists(gzipFile, function(exists)
+    				{
+    					if(exists)
+    						return fn();
 
-						log.debug("generated aggregate: ", path.relative(require("./phnq_widgets").appRoot, file));
+    					log.startTimer();
 
-						fn2();
-					});
-				});
-			});
-		};
-
-		ensureExists(function()
-		{
-			if(_this.shouldCompress())
-			{
-				var gzipFile = file + ".gz";
-				fs.exists(gzipFile, function(exists)
-				{
-					if(exists)
-						return fn();
-
-					log.startTimer();
-
-					var gzip = zlib.createGzip();
-					var inp = fs.createReadStream(file);
-					var out = fs.createWriteStream(gzipFile);
-					out.on("close", function()
-					{
-						fs.stat(file, function(err, stat)
-						{
-							fs.stat(gzipFile, function(err, gzipStat)
-							{
-								var percReduc = Math.round(1000*(stat.size-gzipStat.size)/stat.size)/10;
-								log.debug("gzip'd "+stat.size+"->"+gzipStat.size+" bytes ("+percReduc+"% reduction): ", path.relative(require("./phnq_widgets").appRoot, gzipFile));
-								fn();
-							});
-						});
-					});
-					inp.pipe(gzip).pipe(out);
-				});
-			}
-			else
-			{
-				fn();
-			}
-		});
+    					var gzip = zlib.createGzip();
+    					var inp = fs.createReadStream(file);
+    					var out = fs.createWriteStream(gzipFile);
+    					out.on("close", function()
+    					{
+    						fs.stat(file, function(err, stat)
+    						{
+    							fs.stat(gzipFile, function(err, gzipStat)
+    							{
+    								var percReduc = Math.round(1000*(stat.size-gzipStat.size)/stat.size)/10;
+    								log.debug("gzip'd "+stat.size+"->"+gzipStat.size+" bytes ("+percReduc+"% reduction): ", path.relative(require("./phnq_widgets").appRoot, gzipFile));
+    								fn();
+    							});
+    						});
+    					});
+    					inp.pipe(gzip).pipe(out);
+    				});
+    			}
+    			else
+    			{
+    				fn();
+    			}
+    		});
+        });
 	}
 });
 
@@ -306,7 +335,7 @@ var ScriptAggregator = Aggregator.extend(
 		return config.compressJS;
 	},
 
-	process: function(script)
+	process: function(script, fn)
 	{
 		if(config.minifyJS)
 		{
@@ -327,7 +356,7 @@ var ScriptAggregator = Aggregator.extend(
 			log.debug("minified script: "+len1+"->"+len2+" bytes ("+percentReduc+"%)");
 		}
 
-		return script;
+		fn(null, script);
 	}
 });
 
@@ -343,35 +372,46 @@ var StyleAggregator = Aggregator.extend(
 		return config.compressCSS;
 	},
 
-	process: function(style)
+	process: function(style, fn)
 	{
 		var origStyle = style;
 		log.startTimer();
-		var parser = new(less.Parser);
-		parser.parse(style, function(err, tree)
-		{
-			if(err)
-			{
-				log.error("unable to less\'ify style: ", err.message);
-			}
-			else
-			{
-				style = tree.toCSS({ yuicompress: config.minifyCSS });
-			}
-		});
-
-		if(config.minifyCSS)
-		{
-			var len1 = origStyle.length;
-			var len2 = style.length;
-			var percentReduc = Math.round(1000*(len1-len2)/len1)/10;
-			log.debug("less\'ified and minified style: "+len1+"->"+len2+" bytes ("+percentReduc+"%)");
-		}
-		else
-		{
-			log.debug("less\'ified style");
-		}
-		return style;
+        
+		var parser = new(less.Parser)({paths:lessSearchPath});
+        
+        try
+        {
+    		parser.parse(style, function(err, tree)
+    		{
+    			if(err)
+    			{
+    				log.error("unable to less\'ify style: ", err.message);
+    			}
+    			else
+    			{
+    				style = tree.toCSS({ yuicompress: config.minifyCSS });
+    			}
+                
+        		if(config.minifyCSS)
+        		{
+        			var len1 = origStyle.length;
+        			var len2 = style.length;
+        			var percentReduc = Math.round(1000*(len1-len2)/len1)/10;
+        			log.debug("less\'ified and minified style: "+len1+"->"+len2+" bytes ("+percentReduc+"%)");
+        		}
+        		else
+        		{
+        			log.debug("less\'ified style");
+        		}
+                
+                fn(null, style);
+    		});
+        }
+        catch(ex)
+        {
+			log.error("unable to less\'ify style: ", ex);
+            fn(ex);
+        }
 	}
 });
 

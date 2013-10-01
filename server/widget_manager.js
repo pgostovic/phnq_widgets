@@ -176,15 +176,41 @@ var WidgetManager = phnq_core.clazz(
 	addWidgetsAtPath: function(path, basePath)
 	{
 		var _this = this;
+        
+        var EXT_RE = /[^\.]*\.(ejs|js|css)$/;
 
 		_this.watch(path);
 
 		var names = fs.readdirSync(path);
+        
+        // Sort the names so that widget-sufficient files are first
+        names.sort(function(n1, n2)
+        {
+            n1 = n1.replace(/\.html$/, ".html.ejs");
+            n2 = n2.replace(/\.html$/, ".html.ejs");
+            
+            if(EXT_RE.test(n1) && !EXT_RE.test(n2))
+            {
+                return -1;
+            }
+            else if(!EXT_RE.test(n1) && EXT_RE.test(n2))
+            {
+                return 1;
+            }
+            else
+            {
+                return 0;
+            }
+        });
 
 		_.each(names, function(name)
 		{
 			var f = _path.join(path, name);
 			var stat = fs.statSync(f);
+			var type = _path.basename(_path.dirname(f));
+            
+			if(!type.match(/\./))
+				type = _path.relative(basePath, _path.dirname(f)).split("/").join(".");
 
 			if(stat && stat.isDirectory())
 			{
@@ -197,19 +223,23 @@ var WidgetManager = phnq_core.clazz(
 			{
 				if(name.match(/.*\.less$/))
 				{
-					var lessKey = "less_"+_path.relative(basePath, f);
-					aggregator.registerString(lessKey, fs.readFileSync(f, "UTF-8"));
-					_this.lessKeys.push(lessKey);
+                    // Only register less files that are at the root level of
+                    // a widget
+                    if(_this.widgets[type])
+                    {
+    					var lessKey = "less_"+_path.relative(basePath, f);
+    					aggregator.registerString(lessKey, fs.readFileSync(f, "UTF-8"));
+    					_this.lessKeys.push(lessKey);
+                    }
+                    
+                    // Add folder to the less search path
+                    aggregator.addToLessSearchPath(_path.dirname(f));
 				}
 				else
 				{
-					var m = /[^\.]*\.(ejs|js|css)$/.exec(name.replace(/\.html$/, ".html.ejs"));
+					var m = EXT_RE.exec(name.replace(/\.html$/, ".html.ejs"));
 					if(m)
 					{
-						var type = _path.basename(_path.dirname(f));
-						if(!type.match(/\./))
-							type = _path.relative(basePath, _path.dirname(f)).split("/").join(".");
-
 						_this.watch(f);
 
 						var filename = _path.basename(f);

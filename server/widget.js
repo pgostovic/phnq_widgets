@@ -413,6 +413,8 @@ module.exports = phnq_core.clazz(
 
 	getEmailMarkup: function(context, locale, fn)
 	{
+        var _this = this;
+        
 		var widgetManager = require("./widget_manager").instance();
 
 		// Get Markup -- includes dependencies
@@ -440,23 +442,31 @@ module.exports = phnq_core.clazz(
 		{
 			styleAggregator.append("widget_"+types[i]+"_style");
 		}
+        
+        styleAggregator.getAggregate(function(err, style)
+        {
+            if(err)
+            {
+                log.error("Error getting aggregate style: ", err);
+            }
+            
+    		var shellFn = getCompiledShellEmailMarkupTemplate();
+    		var shellCode = shellFn(
+    		{
+    			lang: locale,
+    			style: style,
+    			body: markup,
+    			widget: _this
+    		});
 
-		var style = styleAggregator.getAggregate();
-
-		var shellFn = getCompiledShellEmailMarkupTemplate();
-		var shellCode = shellFn(
-		{
-			lang: locale,
-			style: style,
-			body: markup,
-			widget: this
-		});
-
-		fn(shellCode);
+    		fn(shellCode);
+        });
 	},
 
 	getWidgetShellCode: function(context, fn)
 	{
+        var _this = this;
+        
 		var title = this.type;
 		var widgetManager = require("./widget_manager").instance();
 		
@@ -535,57 +545,63 @@ module.exports = phnq_core.clazz(
 			styleAggregator.append("widget_"+types[i]+"_style");
 		}
 		
-		var aggScriptUrl, aggStyleUrl;
+        scriptAggregator.getName(function(err, scriptAggName)
+        {
+            styleAggregator.getName(function(err, styleAggName)
+            {
+        		var aggScriptUrl, aggStyleUrl;
+                
+        		if(cdn.getCDN())
+        		{
+        			aggScriptUrl = cdn.getCDN().getUrlForFile("agg/"+scriptAggName+".js");
+        			aggStyleUrl = cdn.getCDN().getUrlForFile("agg/"+styleAggName+".css");
+        		}
+        		else
+        		{
+        			aggScriptUrl = config.uriPrefix + "/agg/" + scriptAggName +".js";
+        			aggStyleUrl = config.uriPrefix + "/agg/" + styleAggName+".css";
+        		}
+                
+        		if(config.compressJS)
+        			aggScriptUrl += ".gz";
 
-		if(cdn.getCDN())
-		{
-			aggScriptUrl = cdn.getCDN().getUrlForFile("agg/"+scriptAggregator.getName()+".js");
-			aggStyleUrl = cdn.getCDN().getUrlForFile("agg/"+styleAggregator.getName()+".css");
-		}
-		else
-		{
-			aggScriptUrl = config.uriPrefix + "/agg/" + scriptAggregator.getName()+".js";
-			aggStyleUrl = config.uriPrefix + "/agg/" + styleAggregator.getName()+".css";
-		}
+        		if(config.compressCSS)
+        			aggStyleUrl += ".gz";
 
-		if(config.compressJS)
-			aggScriptUrl += ".gz";
-
-		if(config.compressCSS)
-			aggStyleUrl += ".gz";
-
-		var shellFn = getCompiledShellMarkupTemplate();
-		var shellCode = shellFn(
-		{
-			title: title,
-			head: head,
-			lang: locale,
-			prefix: config.uriPrefix,
-			body: markup,
-			jQueryCDN: config.jQueryCDN,
-			extScript: extScriptBuf.join(""),
-			aggScriptUrl: aggScriptUrl,
-			aggStyleUrl: aggStyleUrl,
-			widget: this
-		});
+        		var shellFn = getCompiledShellMarkupTemplate();
+        		var shellCode = shellFn(
+        		{
+        			title: title,
+        			head: head,
+        			lang: locale,
+        			prefix: config.uriPrefix,
+        			body: markup,
+        			jQueryCDN: config.jQueryCDN,
+        			extScript: extScriptBuf.join(""),
+        			aggScriptUrl: aggScriptUrl,
+        			aggStyleUrl: aggStyleUrl,
+        			widget: _this
+        		});
 		
-		var scriptExtractRe = /(<script.*<\/script>)\s*<\/html>/;
-		var matcher = scriptExtractRe.exec(shellCode);
-		var scriptTagCode = matcher[1];
+        		var scriptExtractRe = /(<script.*<\/script>)\s*<\/html>/;
+        		var matcher = scriptExtractRe.exec(shellCode);
+        		var scriptTagCode = matcher[1];
 		
-		shellCode = shellCode.replace(scriptTagCode, "");
-		shellCode = shellCode.replace("</body>", scriptTagCode+"\n</body>")
+        		shellCode = shellCode.replace(scriptTagCode, "");
+        		shellCode = shellCode.replace("</body>", scriptTagCode+"\n</body>")
 		
-		scriptAggregator.generate(function()
-		{
-			styleAggregator.generate(function()
-			{
-				cdn.sync(function()
-				{
-					fn(shellCode);
-				});
-			});
-		});
+        		scriptAggregator.generate(function()
+        		{
+        			styleAggregator.generate(function()
+        			{
+        				cdn.sync(function()
+        				{
+        					fn(shellCode);
+        				});
+        			});
+        		});
+            });
+        });
 	},
 
 	getI18nStrings: function()
