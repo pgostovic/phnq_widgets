@@ -114,7 +114,12 @@ var WidgetManager = phnq_core.clazz(
 			}
 			else
 			{
-				return 0;
+				if(n1 > n2)
+					return 1;
+				else if(n1 < n2)
+					return -1;
+				else
+					return 0;
 			}
 		});
 		
