@@ -114,9 +114,9 @@ var WidgetManager = phnq_core.clazz(
 			}
 			else
 			{
-				if(n1 > n2)
+				if(t1 > t2)
 					return 1;
-				else if(n1 < n2)
+				else if(t1 < t2)
 					return -1;
 				else
 					return 0;
