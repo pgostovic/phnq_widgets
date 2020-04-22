@@ -28,7 +28,7 @@
     "phnq_ejs": "1.0.x",
     "phnq_log": "1.0.x",
     "sax": "0.4.0",
-    "uglify-js": "1.3.x",
+    "uglify-js": "2.6.x",
     "underscore": "1.3.3",
     "zombie": "^6.1.4"
   },
